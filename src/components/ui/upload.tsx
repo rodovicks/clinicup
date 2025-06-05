@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface UploadProps {
-  methods: any; // Replace 'any' with the actual type if available
+  methods: any;
 }
 export default function Upload({ methods }: UploadProps) {
   const { register } = methods;
@@ -33,13 +33,18 @@ export default function Upload({ methods }: UploadProps) {
         type="file"
         accept="image/*"
         ref={fileInputRef}
-        {...methods.register('photo')}
+        {...register('photo')}
         id="photo"
         className="hidden"
         onChange={handleFileChange}
       />
 
-      <Button onClick={() => fileInputRef.current?.click()} className="w-full">
+      <Button
+        variant={'primary'}
+        type="button"
+        onClick={() => document.getElementById('photo')?.click()}
+        className="w-full"
+      >
         Selecionar Foto
       </Button>
     </div>

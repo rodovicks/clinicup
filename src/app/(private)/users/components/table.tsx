@@ -1,40 +1,37 @@
 'use client';
-import React, { useState, useMemo } from 'react';
-import { useUsers } from '@/hooks/use-users';
-import { NewUser } from './newUser';
+import React, { useEffect } from 'react';
+import { useUsers } from '@/contexts/users-context';
 import { Edit, Trash } from 'lucide-react';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { EditUser } from './editUser';
+import RemoveUser from './removeUser';
 
 const UserTable = () => {
-  const { users, fetchUsers, saveUser } = useUsers();
-
-  const [refresh, setRefresh] = useState(false);
-
-  useMemo(() => {
-    fetchUsers();
-  }, []);
-
-  const handleSaveUser = async (data: any) => {
-    await saveUser(data);
-    setRefresh(!refresh);
-  };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const totalPages = Math.ceil(users.length / itemsPerPage);
-  const paginatedUsers = users.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const {
+    users,
+    currentPage,
+    fetchUsers,
+    totalPages,
+    loading,
+    setCurrentPage,
+  } = useUsers();
 
   const handlePrevious = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      fetchUsers(currentPage - 1);
+    }
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages) {
+      setCurrentPage(Number(currentPage) + 1);
+      fetchUsers(Number(currentPage) + 1);
+    }
   };
+
+  useEffect(() => {
+    fetchUsers(1);
+  }, []);
 
   return (
     <div className="overflow-x-auto">
@@ -42,62 +39,60 @@ const UserTable = () => {
         <thead className="bg-gray-100">
           <tr>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              ID
-            </th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
               Name
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
               Email
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Role
+              Cargo
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Actions
+              Criado em
+            </th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+              Ações
             </th>
           </tr>
         </thead>
         <tbody>
-          {paginatedUsers.map((user, index) => (
-            <tr
-              key={user.id}
-              className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-            >
-              <td className="px-6 py-4 text-sm text-gray-700">{user.id}</td>
-              <td className="px-6 py-4 text-sm text-gray-700">{user.name}</td>
-              <td className="px-6 py-4 text-sm text-gray-700">{user.email}</td>
-              <td className="px-6 py-4 text-sm text-gray-700">{user.role}</td>
-              <td className="px-6 py-4 text-sm text-gray-700 flex space-x-4">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button
-                      className="text-blue-500 hover:text-blue-700"
-                      aria-label="Edit"
-                    >
-                      <Edit size={16} />
-                    </button>
-                  </DialogTrigger>
-                  <NewUser mode="edit" user={user} onSave={handleSaveUser} />
-                </Dialog>
-
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  aria-label="Delete"
-                >
-                  <Trash size={16} />
-                </button>
+          {loading ? (
+            <tr>
+              <td colSpan={4} className="text-center py-6 text-gray-500">
+                Carregando usuários...
               </td>
             </tr>
-          ))}
+          ) : (
+            users.map((user) => (
+              <tr key={user.id} className="bg-white border-t">
+                <td className="px-6 py-4 text-sm text-gray-700">{user.name}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {user.email}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700">{user.role}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {new Date(user.createdAt || '').toLocaleDateString('pt-BR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                  })}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700 flex items-center gap-2">
+                  <EditUser user={user} />
+                  <RemoveUser userId={user.id || ''} />
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
+
       <div className="flex items-center justify-center gap-4 mt-8">
         <button
           onClick={handlePrevious}
-          disabled={currentPage === 1}
+          disabled={Number(currentPage) === 1}
           className={`px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 ${
-            currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+            Number(currentPage) === 1 ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           Anterior
@@ -107,9 +102,11 @@ const UserTable = () => {
         </span>
         <button
           onClick={handleNext}
-          disabled={currentPage === totalPages}
+          disabled={Number(currentPage) === Number(totalPages)}
           className={`px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 ${
-            currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+            Number(currentPage) === Number(totalPages)
+              ? 'opacity-50 cursor-not-allowed'
+              : ''
           }`}
         >
           Próximo

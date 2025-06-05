@@ -9,8 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+('');
 import { NewUser } from './components/newUser';
 import UserTable from './components/table';
 import { UsersProvider } from '@/contexts/users-context';
@@ -34,12 +33,7 @@ export default function UsersPage() {
             </BreadcrumbList>
           </Breadcrumb>
           <div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="primary">Novo Usuário</Button>
-              </DialogTrigger>
-              <NewUser mode="create" />
-            </Dialog>
+            <NewUser />
           </div>
         </div>
         <div className="mt-8">

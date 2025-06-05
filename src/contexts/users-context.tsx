@@ -1,61 +1,122 @@
-'use client';
+import { createContext, useContext, useState } from 'react';
+import {
+  getUsers,
+  saveUser,
+  updateUser,
+  deleteUser,
+} from '@/services/api-users-service';
+import { toast } from 'sonner';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-
-type User = {
+export interface User {
   id?: string;
   name: string;
   email: string;
-  password?: string;
-  active: boolean;
   role: string;
-};
+  createdAt?: Date;
+  photo?: string;
+}
 
-type UsersContextType = {
+interface UsersContextType {
   users: User[];
-  setUsers: (users: User[]) => void;
-  isLoading: boolean;
-  error: string | null;
-};
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  loading: boolean;
+  setCurrentPage: (page: number) => void;
+  fetchUsers: (page?: number) => Promise<void>;
+  saveUser: (user: User) => Promise<void>;
+  updateUser: (id: string, user: User) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+}
 
-const UsersContext = createContext<UsersContextType>({
-  users: [],
-  setUsers: () => {},
-  isLoading: false,
-  error: null,
-});
+const UsersContext = createContext<UsersContextType | null>(null);
 
-export function UsersProvider({ children }: { children: React.ReactNode }) {
+export const UsersProvider = ({ children }: { children: React.ReactNode }) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page = currentPage) => {
+    setLoading(true);
     try {
-      setIsLoading(true);
-      setError(null);
-      const response = await fetch('/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      const data = await response.json();
-      setUsers(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+      const data = await getUsers(page);
+      setUsers(data.data);
+      setCurrentPage(data.currentPage);
+      setTotalPages(data.totalPages);
+      setTotalItems(data.totalItems);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const handleSaveUser = async (user: User) => {
+    setLoading(true);
+    try {
+      await saveUser(user);
+      toast.success('Usuário salvo com sucesso!');
+      await fetchUsers(currentPage);
+    } catch (error) {
+      toast.error(`Erro: ${error}`);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateUser = async (id: string, user: User) => {
+    setLoading(true);
+    try {
+      await updateUser(id, user);
+      toast.success('Usuário atualizado com sucesso!');
+      await fetchUsers(currentPage);
+    } catch (error) {
+      toast.error(`Erro: ${error}`);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    setLoading(true);
+    try {
+      await deleteUser(id);
+      toast.success('Usuário excluído com sucesso!');
+      await fetchUsers(currentPage);
+    } catch (error) {
+      toast.error(`Erro: ${error}`);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <UsersContext.Provider value={{ users, setUsers, isLoading, error }}>
+    <UsersContext.Provider
+      value={{
+        users,
+        currentPage,
+        totalPages,
+        totalItems,
+        loading,
+        setCurrentPage,
+        fetchUsers,
+        saveUser: handleSaveUser,
+        updateUser: handleUpdateUser,
+        deleteUser: handleDeleteUser,
+      }}
+    >
       {children}
     </UsersContext.Provider>
   );
-}
+};
 
-export const useUsersContext = () => useContext(UsersContext);
+export const useUsers = () => {
+  const ctx = useContext(UsersContext);
+  if (!ctx) {
+    throw new Error('useUsers precisa estar dentro de <UsersProvider>');
+  }
+  return ctx;
+};

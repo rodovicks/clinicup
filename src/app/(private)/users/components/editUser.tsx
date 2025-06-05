@@ -1,5 +1,4 @@
 'use client';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import {
   Dialog,
@@ -11,30 +10,20 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import Upload from '@/components/ui/upload';
-
 import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
 import { useUsers } from '@/contexts/users-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Edit } from 'lucide-react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-  password: yup.string().when([], (password, schema) => {
-    return schema
-      .required('Senha é obrigatória')
-      .min(6, 'A senha deve ter pelo menos 6 caracteres')
-      .matches(/[a-z]/, 'A senha deve conter pelo menos uma letra minúscula')
-      .matches(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula')
-      .matches(/\d/, 'A senha deve conter pelo menos um número')
-      .matches(
-        /[^a-zA-Z0-9]/,
-        'A senha deve conter pelo menos um caractere especial'
-      );
-  }),
+  password: yup.string().optional(),
 });
 
 type FormData = {
@@ -46,7 +35,7 @@ type FormData = {
   photo?: string;
 };
 
-export function NewUser({ user }: { user?: any }) {
+export function EditUser({ user }: { user: any }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const methods = useForm<FormData>({
@@ -58,7 +47,7 @@ export function NewUser({ user }: { user?: any }) {
       active: user?.active || true,
       photo: user?.photo || '',
       password: '',
-      role: 'SECRETARIA',
+      role: user?.role || 'SECRETARIA',
     },
   });
 
@@ -68,10 +57,10 @@ export function NewUser({ user }: { user?: any }) {
     formState: { errors },
   } = methods;
 
-  const { saveUser, fetchUsers, currentPage } = useUsers();
+  const { updateUser } = useUsers();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    await saveUser(data);
+    await updateUser(user.id, data);
     setIsDialogOpen(false);
   };
 
@@ -83,16 +72,16 @@ export function NewUser({ user }: { user?: any }) {
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
-        <Button variant="primary" onClick={() => setIsDialogOpen(true)}>
-          Novo Usuário
-        </Button>
+        <button className="text-sky-500 hover:text-sky-700" aria-label="Edit">
+          <Edit size={16} />
+        </button>
       </DialogTrigger>
       <FormProvider {...methods}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Cadastro de Usuário</DialogTitle>
+            <DialogTitle>Editar Usuário</DialogTitle>
             <DialogDescription>
-              Preencha os campos abaixo para cadastrar um novo usuário.
+              Atualize os campos abaixo para editar o usuário.
             </DialogDescription>
           </DialogHeader>
           <form
