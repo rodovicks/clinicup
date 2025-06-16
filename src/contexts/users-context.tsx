@@ -1,10 +1,7 @@
-import { createContext, useContext, useState } from 'react';
-import {
-  getUsers,
-  saveUser,
-  updateUser,
-  deleteUser,
-} from '@/services/api-users-service';
+'use client';
+
+import { createContext, useContext, useState, ReactNode } from 'react';
+import axios from 'axios';
 import { toast } from 'sonner';
 
 export interface User {
@@ -12,6 +9,8 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  active: boolean;
+  password?: string;
   createdAt?: Date;
   photo?: string;
 }
@@ -31,66 +30,62 @@ interface UsersContextType {
 
 const UsersContext = createContext<UsersContextType | null>(null);
 
-export const UsersProvider = ({ children }: { children: React.ReactNode }) => {
+export const UsersProvider = ({ children }: { children: ReactNode }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const fetchUsers = async (page = currentPage) => {
+  const withLoading = async (callback: () => Promise<void>) => {
     setLoading(true);
     try {
-      const data = await getUsers(page);
+      await callback();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || error.message || 'Erro inesperado'
+      );
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUsers = async (page = currentPage) => {
+    await withLoading(async () => {
+      const response = await axios.get('/api/users', { params: { page } });
+      const data = response.data;
+
       setUsers(data.data);
       setCurrentPage(data.currentPage);
       setTotalPages(data.totalPages);
       setTotalItems(data.totalItems);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleSaveUser = async (user: User) => {
-    setLoading(true);
-    try {
-      await saveUser(user);
+    await withLoading(async () => {
+      await axios.post('/api/users', user);
       toast.success('Usuário salvo com sucesso!');
       await fetchUsers(currentPage);
-    } catch (error) {
-      toast.error(`Erro: ${error}`);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleUpdateUser = async (id: string, user: User) => {
-    setLoading(true);
-    try {
-      await updateUser(id, user);
+    await withLoading(async () => {
+      await axios.put(`/api/users/${id}`, user);
       toast.success('Usuário atualizado com sucesso!');
       await fetchUsers(currentPage);
-    } catch (error) {
-      toast.error(`Erro: ${error}`);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleDeleteUser = async (id: string) => {
-    setLoading(true);
-    try {
-      await deleteUser(id);
+    await withLoading(async () => {
+      await axios.delete(`/api/users/${id}`);
       toast.success('Usuário excluído com sucesso!');
       await fetchUsers(currentPage);
-    } catch (error) {
-      toast.error(`Erro: ${error}`);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -113,10 +108,10 @@ export const UsersProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useUsers = () => {
-  const ctx = useContext(UsersContext);
-  if (!ctx) {
-    throw new Error('useUsers precisa estar dentro de <UsersProvider>');
+export const useUsers = (): UsersContextType => {
+  const context = useContext(UsersContext);
+  if (!context) {
+    throw new Error('Erro ao acessar o contexto de usuários.');
   }
-  return ctx;
+  return context;
 };

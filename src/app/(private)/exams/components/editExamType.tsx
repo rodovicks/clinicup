@@ -13,52 +13,44 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Upload from '@/components/ui/upload';
-
 import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
-import { useUsers } from '@/contexts/users-context';
+import { useExamTypes } from '@/contexts/exams-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Edit } from 'lucide-react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
-  email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-  password: yup.string().when([], (password, schema) => {
-    return schema
-      .required('Senha é obrigatória')
-      .min(6, 'A senha deve ter pelo menos 6 caracteres')
-      .matches(/[a-z]/, 'A senha deve conter pelo menos uma letra minúscula')
-      .matches(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula')
-      .matches(/\d/, 'A senha deve conter pelo menos um número')
-      .matches(
-        /[^a-zA-Z0-9]/,
-        'A senha deve conter pelo menos um caractere especial'
-      );
-  }),
+  description: yup.string().required('Descrição é obrigatória'),
+  defaultDuration: yup
+    .number()
+    .required('Duração padrão é obrigatória')
+    .typeError('Duração padrão deve ser um número')
+    .min(1, 'Duração padrão deve ser maior que 0'),
+  preparationInstruction: yup
+    .string()
+    .required('Instruções de preparação são obrigatórias'),
 });
 
 type FormData = {
   name: string;
-  email: string;
-  password?: string;
-  active: boolean;
-  role: string;
-  photo?: string;
+  description: string;
+  defaultDuration: number;
+  preparationInstruction: string;
 };
 
-export function NewUser({ user }: { user?: any }) {
+export function EditExamType({ examType }: { examType?: any }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema as yup.ObjectSchema<FormData>),
     mode: 'onSubmit',
     defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
-      active: user?.active || true,
-      photo: user?.photo || '',
-      password: '',
-      role: 'SECRETARIA',
+      name: examType?.name || '',
+      description: examType?.description || '',
+      defaultDuration: examType?.defaultDuration || 0,
+      preparationInstruction: examType?.preparationInstruction || '',
     },
   });
 
@@ -68,10 +60,10 @@ export function NewUser({ user }: { user?: any }) {
     formState: { errors },
   } = methods;
 
-  const { saveUser } = useUsers();
+  const { updateExamType } = useExamTypes();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    await saveUser(data);
+    await updateExamType(examType.id, data);
     setIsDialogOpen(false);
   };
 
@@ -83,23 +75,22 @@ export function NewUser({ user }: { user?: any }) {
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
-        <Button variant="primary" onClick={() => setIsDialogOpen(true)}>
-          Novo Usuário
-        </Button>
+        <button className="text-sky-500 hover:text-sky-700" aria-label="Edit">
+          <Edit size={16} />
+        </button>
       </DialogTrigger>
       <FormProvider {...methods}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Cadastro de Usuário</DialogTitle>
+            <DialogTitle>Edição de Tipo de Exame</DialogTitle>
             <DialogDescription>
-              Preencha os campos abaixo para cadastrar um novo usuário.
+              Preencha os campos abaixo para cadastrar um novo tipo de exame.
             </DialogDescription>
           </DialogHeader>
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-6 py-4"
           >
-            <Upload methods={methods} />
             <div className="flex flex-col gap-2">
               <Label htmlFor="name" className="font-medium">
                 Nome
@@ -112,36 +103,46 @@ export function NewUser({ user }: { user?: any }) {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="font-medium">
-                E-mail
+              <Label htmlFor="description" className="font-medium">
+                Descrição
               </Label>
-              <Input id="email" type="email" {...register('email')} />
-              {errors.email && (
+              <Input id="description" {...register('description')} />
+              {errors.description && (
                 <span className="text-red-500 text-sm">
-                  {errors.email.message}
+                  {errors.description.message}
                 </span>
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password" className="font-medium">
-                Senha
+              <Label htmlFor="defaultDuration" className="font-medium">
+                Duração Padrão (minutos)
               </Label>
-              <Input id="password" type="password" {...register('password')} />
-              {errors.password && (
+              <Input
+                id="defaultDuration"
+                type="number"
+                {...register('defaultDuration')}
+              />
+              {errors.defaultDuration && (
                 <span className="text-red-500 text-sm">
-                  {errors.password.message}
+                  {errors.defaultDuration.message}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                name="active"
-                id="active"
-                defaultChecked={user?.active ?? true}
-              />
-              <Label htmlFor="active" className="font-medium">
-                Ativo
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="preparationInstruction" className="font-medium">
+                Instruções de Preparação
               </Label>
+              <Textarea
+                id="preparationInstruction"
+                className="resize-none"
+                rows={4}
+                {...register('preparationInstruction')}
+              />
+              {errors.preparationInstruction && (
+                <span className="text-red-500 text-sm">
+                  {errors.preparationInstruction.message}
+                </span>
+              )}
             </div>
 
             <DialogFooter>

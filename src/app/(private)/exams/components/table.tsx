@@ -1,35 +1,35 @@
 'use client';
 import React, { useEffect } from 'react';
-import { useUsers } from '@/contexts/users-context';
-import { EditUser } from './editUser';
-import RemoveUser from './removeUser';
+import { useExamTypes } from '@/contexts/exams-context';
+import { EditExamType } from './editExamType';
+import RemoveExamType from './removeExamType';
 
-const UserTable = () => {
+const ExamTypeTable = () => {
   const {
-    users,
+    examTypes,
     currentPage,
-    fetchUsers,
+    fetchExamTypes,
     totalPages,
     loading,
     setCurrentPage,
-  } = useUsers();
+  } = useExamTypes();
 
   const handlePrevious = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
-      fetchUsers(currentPage - 1);
+      fetchExamTypes(currentPage - 1);
     }
   };
 
   const handleNext = () => {
     if (currentPage < totalPages) {
       setCurrentPage(Number(currentPage) + 1);
-      fetchUsers(Number(currentPage) + 1);
+      fetchExamTypes(Number(currentPage) + 1);
     }
   };
 
   useEffect(() => {
-    fetchUsers(1);
+    fetchExamTypes(1);
   }, []);
 
   return (
@@ -38,13 +38,13 @@ const UserTable = () => {
         <thead className="bg-gray-100">
           <tr>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Name
+              Nome
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Email
+              Descrição
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Cargo
+              Duração
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
               Criado em
@@ -58,27 +58,34 @@ const UserTable = () => {
           {loading ? (
             <tr>
               <td colSpan={4} className="text-center py-6 text-gray-500">
-                Carregando usuários...
+                Carregando tipos de exame...
               </td>
             </tr>
           ) : (
-            users.map((user) => (
-              <tr key={user.id} className="bg-white border-t">
-                <td className="px-6 py-4 text-sm text-gray-700">{user.name}</td>
+            examTypes?.map((examType) => (
+              <tr key={examType.id} className="bg-white border-t">
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {user.email}
+                  {examType.name}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-700">{user.role}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {new Date(user.createdAt || '').toLocaleDateString('pt-BR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                  })}
+                  {examType.description}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {examType.defaultDuration} min
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {new Date(examType.createdAt || '').toLocaleDateString(
+                    'pt-BR',
+                    {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                    }
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700 flex items-center gap-2">
-                  <EditUser user={user} />
-                  <RemoveUser userId={user.id || ''} />
+                  <EditExamType examType={examType} />
+                  <RemoveExamType examType={examType} />
                 </td>
               </tr>
             ))
@@ -115,4 +122,4 @@ const UserTable = () => {
   );
 };
 
-export default UserTable;
+export default ExamTypeTable;

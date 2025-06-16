@@ -37,19 +37,13 @@ export default function Login() {
 
   const router = useRouter();
 
-  const { login, loading, error } = useLogin();
+  const { login, loading } = useLogin();
 
   const onSubmit = async (data: LoginFormInputs) => {
-    try {
-      const response = await login(data.email, data.password);
-      if (!response?.token || error) {
-        toast.error('Erro ao fazer login. Verifique suas credenciais.');
-      } else {
-        toast.success('Login realizado com sucesso!');
-        router.push('/');
-      }
-    } catch (validationError) {
-      console.error('Erro de validação:', validationError);
+    const result = await login(data.email, data.password);
+
+    if (result?.success) {
+      router.push('/');
     }
   };
 

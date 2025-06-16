@@ -1,26 +1,17 @@
 'use server';
 
 import axios from 'axios';
-import { cookies } from 'next/headers';
 import type { User } from '@/contexts/users-context';
+import { getAuthHeaders } from './jwt-service';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
-
+const BASE_URL = process.env.BASE_URL || '';
+const secret = process.env.NEXTAUTH_SECRET;
 interface UserResponse {
   data: User[];
   currentPage: number;
   totalPages: number;
   totalItems: number;
 }
-
-const getAuthHeaders = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  return {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
 
 export const getUsers = async (page: number = 1): Promise<UserResponse> => {
   const headers = await getAuthHeaders();
