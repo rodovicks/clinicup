@@ -9,7 +9,7 @@ interface Params {
 }
 
 export async function PUT(request: Request, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const body = await request.json();
@@ -28,7 +28,7 @@ export async function PUT(request: Request, { params }: Params) {
 }
 
 export async function DELETE(request: Request, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     await deleteExamType(id);

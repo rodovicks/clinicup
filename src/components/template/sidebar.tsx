@@ -33,7 +33,7 @@ export function Sidebar() {
           variant="link"
           asChild
         >
-          <Link href="/dashboard" className="flex items-center gap-2 ">
+          <Link href="/home" className="flex items-center gap-2 ">
             <Activity className="w-6 h-6 mr-1 text-sky-500" />
             <h1
               className={cn(

@@ -6,8 +6,7 @@ interface Params {
 }
 
 export async function PUT(request: Request, { params }: Params) {
-  const { id } = params;
-
+  const { id } = await params;
   try {
     const body = await request.json();
     const updated = await updateUser(id, body);
@@ -24,8 +23,7 @@ export async function PUT(request: Request, { params }: Params) {
 }
 
 export async function DELETE(request: Request, { params }: Params) {
-  const { id } = params;
-
+  const { id } = await params;
   try {
     await deleteUser(id);
     return NextResponse.json({ message: 'Excluído com sucesso' });

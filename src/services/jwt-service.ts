@@ -1,5 +1,6 @@
 'use server';
 
+import { auth } from '@/auth';
 import { getToken } from 'next-auth/jwt';
 import { cookies } from 'next/headers';
 
@@ -28,4 +29,9 @@ export const getAuthHeaders = async () => {
     Authorization: `Bearer ${token?.accessToken}`,
     'Content-Type': 'application/json',
   };
+};
+
+export const sessionAuth = async () => {
+  const sessionData = await auth();
+  return sessionData;
 };

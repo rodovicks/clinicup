@@ -27,7 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           if (data.token) {
             return {
-              id: data.email,
+              id: data.id,
               name: data.name,
               email: data.email,
               role: data.role,
@@ -56,14 +56,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (!isLoggedIn) return false;
 
-      if (nextUrl.pathname.startsWith('/login'))
-        return Response.redirect(new URL('/home', nextUrl));
+      if (nextUrl.pathname.startsWith('/login')) {
+        if (auth?.user) {
+          return Response.redirect(new URL('/home', nextUrl));
+        }
+        return true;
+      }
 
       return true;
     },
 
     async jwt({ token, user }: any) {
       if (user) {
+        token.id = user.id;
         token.accessToken = user.accessToken;
         token.name = user.name;
         token.email = user.email;
@@ -74,6 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }: any) {
       session.user = {
+        id: token.id,
         name: token.name,
         email: token.email,
         role: token.role,

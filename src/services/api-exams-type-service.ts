@@ -5,7 +5,6 @@ import axios from 'axios';
 import { getAuthHeaders } from './jwt-service';
 
 const BASE_URL = process.env.BASE_URL || '';
-const secret = process.env.NEXTAUTH_SECRET;
 
 export interface ExamsTypeResponse {
   data: ExamType[];

@@ -20,7 +20,30 @@ const schema = yup.object().shape({
     .required('Senha é obrigatória'),
 });
 
+import { useEffect } from 'react';
+
 export default function Login() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSetupStatus = async () => {
+      try {
+        const response = await fetch('/api/register/status');
+        const data = await response.json();
+        console.log('Status de configuração:', data);
+        if (!data?.initialized) {
+          console.log('Sistema não configurado, redirecionando para registro');
+          setTimeout(() => {
+            router.push('/register');
+          }, 100);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar o status de configuração:', error);
+      }
+    };
+
+    checkSetupStatus();
+  }, [router]);
   const {
     register,
     handleSubmit,
@@ -35,15 +58,12 @@ export default function Login() {
     password: string;
   }
 
-  const router = useRouter();
-
   const { login, loading } = useLogin();
 
   const onSubmit = async (data: LoginFormInputs) => {
     const result = await login(data.email, data.password);
-
     if (result?.success) {
-      router.push('/');
+      router.push('/home');
     }
   };
 
@@ -106,7 +126,7 @@ export default function Login() {
           <div className="flex justify-end mt-4">
             <Link
               className="text-sm text-sky-500 hover:underline"
-              href="/forgot-password"
+              href="/reset-password"
             >
               Esqueci minha senha
             </Link>

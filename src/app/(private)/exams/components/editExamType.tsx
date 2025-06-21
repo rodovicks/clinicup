@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import Upload from '@/components/ui/upload';
 import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
 import { useExamTypes } from '@/contexts/exams-context';
 import { yupResolver } from '@hookform/resolvers/yup';

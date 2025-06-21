@@ -5,7 +5,7 @@ import type { User } from '@/contexts/users-context';
 import { getAuthHeaders } from './jwt-service';
 
 const BASE_URL = process.env.BASE_URL || '';
-const secret = process.env.NEXTAUTH_SECRET;
+
 interface UserResponse {
   data: User[];
   currentPage: number;

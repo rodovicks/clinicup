@@ -1,0 +1,41 @@
+import { NextResponse } from 'next/server';
+import {
+  getAppointments,
+  saveAppointment,
+} from '@/services/api-appoiments-service';
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = Number(searchParams.get('page')) || 1;
+
+  try {
+    const data = await getAppointments(page);
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('Erro ao buscar agendamentos:', error);
+    return NextResponse.json(
+      {
+        message:
+          error?.response?.data?.message || 'Erro ao buscar agendamentos',
+      },
+      { status: error?.response?.status || 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    console.log('Dados do agendamento:', body);
+    const created = await saveAppointment(body);
+    return NextResponse.json(created);
+  } catch (error: any) {
+    console.error('Erro ao salvar agendamento:', error);
+    return NextResponse.json(
+      {
+        message: error?.response?.data?.message || 'Erro ao salvar agendamento',
+      },
+      { status: error?.response?.status || 500 }
+    );
+  }
+}
