@@ -12,12 +12,18 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
+import {
+  useForm,
+  SubmitHandler,
+  FormProvider,
+  Controller,
+} from 'react-hook-form';
 import { useExamTypes } from '@/contexts/exams-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
@@ -30,6 +36,7 @@ const schema = yup.object().shape({
   preparationInstruction: yup
     .string()
     .required('Instruções de preparação são obrigatórias'),
+  active: yup.boolean(),
 });
 
 type FormData = {
@@ -37,6 +44,7 @@ type FormData = {
   description: string;
   defaultDuration: number;
   preparationInstruction: string;
+  active?: boolean;
 };
 
 export function EditExamType({ examType }: { examType?: any }) {
@@ -50,6 +58,7 @@ export function EditExamType({ examType }: { examType?: any }) {
       description: examType?.description || '',
       defaultDuration: examType?.defaultDuration || 0,
       preparationInstruction: examType?.preparationInstruction || '',
+      active: examType?.active,
     },
   });
 
@@ -62,6 +71,7 @@ export function EditExamType({ examType }: { examType?: any }) {
   const { updateExamType } = useExamTypes();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
+    console.log('teste', data);
     await updateExamType(examType.id, data);
     setIsDialogOpen(false);
   };
@@ -142,6 +152,23 @@ export function EditExamType({ examType }: { examType?: any }) {
                   {errors.preparationInstruction.message}
                 </span>
               )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Controller
+                name="active"
+                control={methods.control}
+                defaultValue={examType?.active ?? true}
+                render={({ field }) => (
+                  <Checkbox
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked)}
+                  />
+                )}
+              />
+              <Label htmlFor="active" className="font-medium">
+                Ativo
+              </Label>
             </div>
 
             <DialogFooter>

@@ -14,10 +14,7 @@ import { useRouter } from 'next/navigation';
 
 const schema = yup.object().shape({
   email: yup.string().email('Email inválido').required('Email é obrigatório'),
-  password: yup
-    .string()
-    .min(5, 'A senha deve ter pelo menos 6 caracteres')
-    .required('Senha é obrigatória'),
+  password: yup.string().required('Senha é obrigatória'),
 });
 
 import { useEffect } from 'react';
@@ -30,15 +27,14 @@ export default function Login() {
       try {
         const response = await fetch('/api/register/status');
         const data = await response.json();
-        console.log('Status de configuração:', data);
         if (!data?.initialized) {
-          console.log('Sistema não configurado, redirecionando para registro');
+          toast('Sistema não configurado, redirecionando para registro');
           setTimeout(() => {
             router.push('/register');
           }, 100);
         }
       } catch (error) {
-        console.error('Erro ao verificar o status de configuração:', error);
+        toast('Erro ao verificar o status de configuração.');
       }
     };
 

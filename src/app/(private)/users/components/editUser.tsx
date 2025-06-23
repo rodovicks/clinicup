@@ -13,7 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import Upload from '@/components/ui/upload';
-import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
+import {
+  useForm,
+  SubmitHandler,
+  FormProvider,
+  Controller,
+} from 'react-hook-form';
 import { useUsers } from '@/contexts/users-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -23,16 +28,17 @@ import { Edit } from 'lucide-react';
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-  password: yup.string().optional(),
+  active: yup.boolean(),
+  birth_date: yup.string().required('Data de nascimento é obrigatória'),
 });
 
 type FormData = {
   name: string;
   email: string;
-  password?: string;
   active: boolean;
   role: string;
   photo?: string;
+  birth_date: string | Date;
 };
 
 export function EditUser({ user }: { user: any }) {
@@ -46,8 +52,8 @@ export function EditUser({ user }: { user: any }) {
       email: user?.email || '',
       active: user?.active || true,
       photo: user?.photo || '',
-      password: '',
       role: user?.role || 'SECRETARIA',
+      birth_date: user?.birth_date || '',
     },
   });
 
@@ -60,7 +66,24 @@ export function EditUser({ user }: { user: any }) {
   const { updateUser } = useUsers();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    await updateUser(user.id, data);
+    const formData = new FormData();
+
+    const userData = {
+      name: data.name,
+      email: data.email,
+      birth_date: data.birth_date,
+      active: data.active,
+      role: data.role,
+    };
+    formData.append('userData', JSON.stringify(userData));
+
+    const fileInput = document.getElementById('photo') as HTMLInputElement;
+    const file = fileInput?.files?.[0];
+    if (file) {
+      formData.append('photo', file);
+    }
+
+    await updateUser(user.id, formData);
     setIsDialogOpen(false);
   };
 
@@ -88,7 +111,7 @@ export function EditUser({ user }: { user: any }) {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-6 py-4"
           >
-            <Upload methods={methods} />
+            <Upload initialImage={user?.photo} />
             <div className="flex flex-col gap-2">
               <Label htmlFor="name" className="font-medium">
                 Nome
@@ -112,21 +135,28 @@ export function EditUser({ user }: { user: any }) {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password" className="font-medium">
-                Senha
+              <Label htmlFor="birth_date" className="font-medium">
+                Data de Nascimento
               </Label>
-              <Input id="password" type="password" {...register('password')} />
-              {errors.password && (
+              <Input id="birth_date" type="date" {...register('birth_date')} />
+              {errors.birth_date && (
                 <span className="text-red-500 text-sm">
-                  {errors.password.message}
+                  {errors.birth_date.message}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Checkbox
+              <Controller
                 name="active"
-                id="active"
-                defaultChecked={user?.active ?? true}
+                control={methods.control}
+                defaultValue={user?.active ?? true}
+                render={({ field }) => (
+                  <Checkbox
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked)}
+                  />
+                )}
               />
               <Label htmlFor="active" className="font-medium">
                 Ativo

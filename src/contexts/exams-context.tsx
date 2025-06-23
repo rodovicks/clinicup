@@ -10,6 +10,7 @@ export interface ExamType {
   description: string;
   defaultDuration: number | string;
   preparationInstruction: string;
+  active?: boolean;
   createdAt?: Date;
 }
 

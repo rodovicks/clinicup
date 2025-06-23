@@ -204,23 +204,19 @@ export const NewAppointment = React.memo(function NewAppointment() {
               <Label htmlFor="date" className="font-medium">
                 Data do Agendamento
               </Label>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="date" className="font-medium">
-                  Data do Agendamento
-                </Label>
-                <Input id="date" type="datetime-local" {...register('date')} />
-                {examDuration && (
-                  <span className="text-gray-500 text-sm">
-                    Duração estimada: {examDuration} minutos
-                  </span>
-                )}
-              </div>
-              {errors.date && (
-                <span className="text-red-500 text-sm">
-                  {errors.date.message}
+              <Input id="date" type="datetime-local" {...register('date')} />
+              {examDuration && (
+                <span className="text-gray-500 text-sm">
+                  Duração estimada: {examDuration} minutos
                 </span>
               )}
             </div>
+            {errors.date && (
+              <span className="text-red-500 text-sm">
+                {errors.date.message}
+              </span>
+            )}
+
             <div className="flex flex-col gap-2">
               <Label htmlFor="details" className="font-medium">
                 Detalhes

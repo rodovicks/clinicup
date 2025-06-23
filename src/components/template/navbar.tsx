@@ -1,4 +1,3 @@
-import { UserNav } from '@/components/template/user-nav';
 import { SheetMenu } from '@/components/template/sheet-menu';
 
 interface NavbarProps {
@@ -12,9 +11,6 @@ export function Navbar({ title }: NavbarProps) {
         <div className="flex items-center space-x-4 lg:space-x-0">
           <SheetMenu />
           <h1 className="font-bold text-sky-500">{title}</h1>
-        </div>
-        <div className="flex flex-1 items-center justify-end">
-          <UserNav />
         </div>
       </div>
     </header>

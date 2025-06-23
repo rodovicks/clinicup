@@ -47,7 +47,7 @@ const UserTable = () => {
               Cargo
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Criado em
+              Situação
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
               Ações
@@ -70,11 +70,11 @@ const UserTable = () => {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">{user.role}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {new Date(user.createdAt || '').toLocaleDateString('pt-BR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                  })}
+                  {user.active ? (
+                    <span className="text-green-500">Ativo</span>
+                  ) : (
+                    <span className="text-red-500">Inativo</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700 flex items-center gap-2">
                   <EditUser user={user} />

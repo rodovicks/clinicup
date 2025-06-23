@@ -2,7 +2,10 @@
 
 import axios from 'axios';
 import type { User } from '@/contexts/users-context';
-import { getAuthHeaders } from './jwt-service';
+import {
+  getAuthHeaders,
+  getAuthHeadersWithoutContentType,
+} from './jwt-service';
 
 const BASE_URL = process.env.BASE_URL || '';
 
@@ -23,21 +26,36 @@ export const getUsers = async (page: number = 1): Promise<UserResponse> => {
   return response.data;
 };
 
-export const saveUser = async (data: User): Promise<User> => {
-  const headers = await getAuthHeaders();
-  const response = await axios.post(`${BASE_URL}/users`, data, {
-    headers,
-  });
+export const saveUser = async (data: User | FormData): Promise<User> => {
+  const isFormData = data instanceof FormData;
 
+  const headers = isFormData
+    ? await getAuthHeadersWithoutContentType()
+    : await getAuthHeaders();
+  console.log(data);
+  const response = await axios.post(`${BASE_URL}/users`, data, { headers });
   return response.data;
 };
 
-export const updateUser = async (id: string, data: User): Promise<User> => {
+export const updateUser = async (
+  id: string,
+  data: User | FormData
+): Promise<User> => {
   const headers = await getAuthHeaders();
-  const response = await axios.put(`${BASE_URL}/users/${id}`, data, {
-    headers,
-  });
+  const requestConfig = {
+    headers: {
+      ...headers,
+      ...(data instanceof FormData
+        ? {}
+        : { 'Content-Type': 'application/json' }),
+    },
+  };
 
+  const response = await axios.put(
+    `${BASE_URL}/users/${id}`,
+    data,
+    requestConfig
+  );
   return response.data;
 };
 

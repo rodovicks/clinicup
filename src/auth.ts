@@ -2,6 +2,22 @@ import axios from 'axios';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import NextAuth from 'next-auth';
 
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  expiresOn: string;
+  accessToken: string;
+  firstLogin: boolean;
+};
+
+declare module 'next-auth' {
+  interface Session {
+    user?: User;
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
@@ -33,6 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               role: data.role,
               expiresOn: data.expiresOn,
               accessToken: data.token,
+              firstLogin: data.firstLogin,
             };
           }
 
@@ -74,6 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email;
         token.role = user.role;
         token.expiresOn = user.expiresOn;
+        token.firstLogin = user.firstLogin; // Pass firstLogin to token
       }
       return token;
     },
@@ -83,6 +101,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         name: token.name,
         email: token.email,
         role: token.role,
+        firstLogin: token.firstLogin, // Pass firstLogin to session
       };
 
       return session;

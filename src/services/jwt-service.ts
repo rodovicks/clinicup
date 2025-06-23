@@ -6,14 +6,13 @@ import { cookies } from 'next/headers';
 
 const secret = process.env.NEXTAUTH_SECRET;
 
-export const getAuthHeaders = async () => {
+export const getAuthHeaders = async (contentType = 'application/json') => {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore
     .getAll()
-    .map((cookie) => {
-      return `${cookie.name}=${cookie.value}`;
-    })
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join('; ');
+
   const token = await getToken({
     req: {
       headers: {
@@ -26,8 +25,31 @@ export const getAuthHeaders = async () => {
   if (!token) throw new Error('Usuário não autenticado');
 
   return {
-    Authorization: `Bearer ${token?.accessToken}`,
-    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token.accessToken}`,
+    'Content-Type': contentType,
+  };
+};
+
+export const getAuthHeadersWithoutContentType = async () => {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join('; ');
+
+  const token = await getToken({
+    req: {
+      headers: {
+        cookie: cookieHeader,
+      },
+    } as any,
+    secret,
+  });
+
+  if (!token) throw new Error('Usuário não autenticado');
+
+  return {
+    Authorization: `Bearer ${token.accessToken}`,
   };
 };
 

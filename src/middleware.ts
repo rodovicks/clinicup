@@ -19,7 +19,14 @@ export async function middleware(request: NextRequest) {
     redirectUrl.pathname = '/login';
     return NextResponse.redirect(redirectUrl);
   }
+
   const path = request.nextUrl.pathname;
+
+  if (session?.user?.firstLogin && path !== '/set-password') {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/set-password';
+    return NextResponse.redirect(redirectUrl);
+  }
 
   if (session && path === '/') {
     const redirectUrl = request.nextUrl.clone();

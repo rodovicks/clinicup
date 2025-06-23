@@ -10,9 +10,9 @@ export interface User {
   email: string;
   role: string;
   active: boolean;
-  password?: string;
   createdAt?: Date;
   photo?: string;
+  birth_date?: Date | string;
 }
 
 interface UsersContextType {
@@ -23,8 +23,8 @@ interface UsersContextType {
   loading: boolean;
   setCurrentPage: (page: number) => void;
   fetchUsers: (page?: number) => Promise<void>;
-  saveUser: (user: User) => Promise<void>;
-  updateUser: (id: string, user: User) => Promise<void>;
+  saveUser: (user: FormData) => Promise<void>;
+  updateUser: (id: string, user: User | FormData) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
 }
 
@@ -64,15 +64,16 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const handleSaveUser = async (user: User) => {
+  const handleSaveUser = async (user: FormData) => {
     await withLoading(async () => {
+      console.log(user);
       await axios.post('/api/users', user);
       toast.success('Usuário salvo com sucesso!');
       await fetchUsers(currentPage);
     });
   };
 
-  const handleUpdateUser = async (id: string, user: User) => {
+  const handleUpdateUser = async (id: string, user: User | FormData) => {
     await withLoading(async () => {
       await axios.put(`/api/users/${id}`, user);
       toast.success('Usuário atualizado com sucesso!');
