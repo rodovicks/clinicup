@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { ContentLayout } from '@/components/template/content-layout';
 import {
@@ -8,6 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import FormConfig from './components/formConfig';
 
 export default function SettingsPage() {
   return (
@@ -16,7 +19,7 @@ export default function SettingsPage() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/home">Dashboard</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -25,6 +28,7 @@ export default function SettingsPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      <FormConfig />
     </ContentLayout>
   );
 }

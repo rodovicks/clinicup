@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ClientLayout from './layout-client';
+import React from 'react';
 
 export const metadata: Metadata = {
   metadataBase: new URL(

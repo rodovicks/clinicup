@@ -1,75 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const publicRoutes = [
-  { path: '/login', whenAuthenticated: 'redirect' },
-] as const;
+export async function middleware(request: NextRequest) {
+  const session = await auth();
+  const isPublicRoute = [
+    '/api',
+    '/register',
+    '/set-password',
+    '/reset-password',
+    '/verify-code',
+    '/schedule',
+    '/confirmation',
+  ].some((route) => request.nextUrl.pathname.startsWith(route));
 
-const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = '/login';
+  if (!isPublicRoute && !session && request.nextUrl.pathname !== '/login') {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    return NextResponse.redirect(redirectUrl);
+  }
 
-function isTokenExpiredFromExpiresOn(expiresOn: string | undefined): boolean {
-  if (!expiresOn) return true;
-  const now = Math.floor(Date.now() / 1000);
-  return Number(expiresOn) < now;
-}
-
-export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const authToken = request.cookies.get('token');
-  const expiresOn = request.cookies.get('expiresOn');
-  const publicRoute = publicRoutes.find((route) => route.path === path);
 
-  // Rota pública e não autenticado: segue
-  if (!authToken && publicRoute) {
-    return NextResponse.next();
-  }
-
-  // Rota protegida e não autenticado: redireciona
-  if (!authToken && !publicRoute) {
+  if (session?.user?.firstLogin && path !== '/set-password') {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE;
+    redirectUrl.pathname = '/set-password';
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Rota pública mas usuário autenticado deve ser redirecionado
-  if (authToken && publicRoute?.whenAuthenticated === 'redirect') {
+  if (session && path === '/') {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/';
+    redirectUrl.pathname = '/home';
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Redireciona de "/" para "/dashboard" se autenticado
-  if (authToken && path === '/') {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/dashboard';
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Rota protegida e autenticado: verifica expiração
-  if (authToken && !publicRoute) {
-    if (isTokenExpiredFromExpiresOn(expiresOn?.value)) {
-      const response = NextResponse.redirect(
-        new URL(REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE, request.url)
-      );
-      response.cookies.set('token', '', { maxAge: 0 });
-      response.cookies.set('expiresOn', '', { maxAge: 0 });
-      return response;
-    }
-    return NextResponse.next();
-  }
-
-  // Default
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/((?!api|_next/static|_next/image|.*\\.png$|register|set-password|reset-password|verify-code|schedule|confirmation).*)',
   ],
 };

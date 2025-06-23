@@ -14,13 +14,32 @@ import { useRouter } from 'next/navigation';
 
 const schema = yup.object().shape({
   email: yup.string().email('Email inválido').required('Email é obrigatório'),
-  password: yup
-    .string()
-    .min(5, 'A senha deve ter pelo menos 6 caracteres')
-    .required('Senha é obrigatória'),
+  password: yup.string().required('Senha é obrigatória'),
 });
 
+import { useEffect } from 'react';
+
 export default function Login() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSetupStatus = async () => {
+      try {
+        const response = await fetch('/api/register/status');
+        const data = await response.json();
+        if (!data?.initialized) {
+          toast('Sistema não configurado, redirecionando para registro');
+          setTimeout(() => {
+            router.push('/register');
+          }, 100);
+        }
+      } catch (error) {
+        toast('Erro ao verificar o status de configuração.');
+      }
+    };
+
+    checkSetupStatus();
+  }, [router]);
   const {
     register,
     handleSubmit,
@@ -35,21 +54,12 @@ export default function Login() {
     password: string;
   }
 
-  const router = useRouter();
-
-  const { login, loading, error } = useLogin();
+  const { login, loading } = useLogin();
 
   const onSubmit = async (data: LoginFormInputs) => {
-    try {
-      const response = await login(data.email, data.password);
-      if (!response?.token || error) {
-        toast.error('Erro ao fazer login. Verifique suas credenciais.');
-      } else {
-        toast.success('Login realizado com sucesso!');
-        router.push('/');
-      }
-    } catch (validationError) {
-      console.error('Erro de validação:', validationError);
+    const result = await login(data.email, data.password);
+    if (result?.success) {
+      router.push('/home');
     }
   };
 
@@ -112,7 +122,7 @@ export default function Login() {
           <div className="flex justify-end mt-4">
             <Link
               className="text-sm text-sky-500 hover:underline"
-              href="/forgot-password"
+              href="/reset-password"
             >
               Esqueci minha senha
             </Link>

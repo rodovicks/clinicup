@@ -26,7 +26,7 @@ export function SheetMenu() {
             variant="link"
             asChild
           >
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href="/home" className="flex items-center gap-2">
               <Activity className="w-6 h-6 mr-1 text-sky-500" />
               <SheetTitle className="font-bold text-lg text-sky-500">
                 Clinic Up

@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface UploadProps {
-  methods: any; // Replace 'any' with the actual type if available
+  initialImage?: string;
+  onImageUpload?: (file: File, preview: string) => void;
 }
-export default function Upload({ methods }: UploadProps) {
-  const { register } = methods;
+
+export default function Upload({ initialImage, onImageUpload }: UploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(initialImage || null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -19,6 +20,7 @@ export default function Upload({ methods }: UploadProps) {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
+      onImageUpload?.(file, URL.createObjectURL(file));
     }
   }
 
@@ -33,13 +35,18 @@ export default function Upload({ methods }: UploadProps) {
         type="file"
         accept="image/*"
         ref={fileInputRef}
-        {...methods.register('photo')}
+        name="photo"
         id="photo"
         className="hidden"
         onChange={handleFileChange}
       />
 
-      <Button onClick={() => fileInputRef.current?.click()} className="w-full">
+      <Button
+        variant={'primary'}
+        type="button"
+        onClick={() => document.getElementById('photo')?.click()}
+        className="w-full"
+      >
         Selecionar Foto
       </Button>
     </div>
