@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, ReactNode } from "react";
-import axios from "axios";
-import { toast } from "sonner";
+import { createContext, useContext, useState, ReactNode } from 'react';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 export interface User {
   id?: string;
@@ -44,7 +44,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || error.message || "Erro inesperado"
+        error.response?.data?.message || error.message || 'Erro inesperado'
       );
       throw error;
     } finally {
@@ -54,7 +54,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUsers = async (page = currentPage) => {
     await withLoading(async () => {
-      const response = await axios.get("/api/users", { params: { page } });
+      const response = await axios.get('/api/users', { params: { page } });
       const data = response.data;
 
       setUsers(data.data);
@@ -67,8 +67,8 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
   const handleSaveUser = async (user: FormData) => {
     await withLoading(async () => {
       console.log(user);
-      await axios.post("/api/users", user);
-      toast.success("Usuário salvo com sucesso!");
+      await axios.post('/api/users', user);
+      toast.success('Usuário salvo com sucesso!');
       await fetchUsers(currentPage);
     });
   };
@@ -76,7 +76,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
   const handleUpdateUser = async (id: string, user: User | FormData) => {
     await withLoading(async () => {
       await axios.put(`/api/users/${id}`, user);
-      toast.success("Usuário atualizado com sucesso!");
+      toast.success('Usuário atualizado com sucesso!');
       await fetchUsers(currentPage);
     });
   };
@@ -84,7 +84,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
   const handleDeleteUser = async (id: string) => {
     await withLoading(async () => {
       await axios.delete(`/api/users/${id}`);
-      toast.success("Usuário excluído com sucesso!");
+      toast.success('Usuário excluído com sucesso!');
       await fetchUsers(currentPage);
     });
   };
@@ -112,7 +112,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
 export const useUsers = (): UsersContextType => {
   const context = useContext(UsersContext);
   if (!context) {
-    throw new Error("Erro ao acessar o contexto de usuários.");
+    throw new Error('Erro ao acessar o contexto de usuários.');
   }
   return context;
 };

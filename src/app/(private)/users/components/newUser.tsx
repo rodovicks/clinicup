@@ -13,28 +13,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Upload from '@/components/ui/upload';
-import {
-  useForm,
-  SubmitHandler,
-  FormProvider,
-  Controller,
-} from 'react-hook-form';
+import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
 import { useUsers } from '@/contexts/users-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Checkbox } from '@/components/ui/checkbox';
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
   birth_date: yup.string().required('Data de nascimento é obrigatória'),
-  active: yup.boolean(),
 });
 
 type FormData = {
   name: string;
   email: string;
-  active: boolean;
   role: string;
   photo?: string;
   birth_date: string;
@@ -49,7 +41,6 @@ export function NewUser({ user }: { user?: any }) {
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
-      active: user?.active || true,
       photo: user?.photo || '',
       role: 'SECRETARIA',
       birth_date: user?.birth_date || '',
@@ -72,7 +63,6 @@ export function NewUser({ user }: { user?: any }) {
       name: data.name,
       email: data.email,
       birth_date: data.birth_date,
-      active: data.active,
       role: data.role,
     };
     formData.append('userData', JSON.stringify(userData));
@@ -145,24 +135,6 @@ export function NewUser({ user }: { user?: any }) {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Controller
-                name="active"
-                control={methods.control}
-                defaultValue={user?.active ?? true}
-                render={({ field }) => (
-                  <Checkbox
-                    id="active"
-                    checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked)}
-                  />
-                )}
-              />
-              <Label htmlFor="active" className="font-medium">
-                Ativo
-              </Label>
-            </div>
-
             <DialogFooter>
               <Button variant={'primary'} type="submit">
                 Salvar

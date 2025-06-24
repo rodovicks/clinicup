@@ -4,8 +4,6 @@ import { getUsers, saveUser, updateUser } from '@/services/api-users-service';
 export async function handleFormData(request: Request) {
   const formData = await request.formData();
 
-  console.log('FormData received:', formData);
-
   const photo = formData.get('photo') as File | null;
   const userData = formData.get('userData');
 
@@ -36,7 +34,6 @@ export async function GET(request: Request) {
     const data = await getUsers(page);
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Erro ao buscar usuários:', error);
     return NextResponse.json(
       { message: error?.response?.data?.message || 'Erro ao buscar usuários' },
       { status: error?.response?.status || 500 }
@@ -50,32 +47,8 @@ export async function POST(request: Request) {
     const created = await saveUser(apiFormData);
     return NextResponse.json(created);
   } catch (error: any) {
-    console.error('Erro ao salvar usuário:', error);
     return NextResponse.json(
       { message: error?.response?.data?.message || 'Erro ao salvar usuário' },
-      { status: error?.response?.status || 500 }
-    );
-  }
-}
-
-export async function PUT(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      throw new Error('ID is required');
-    }
-
-    const { apiFormData } = await handleFormData(request);
-    const updated = await updateUser(id, apiFormData);
-    return NextResponse.json(updated);
-  } catch (error: any) {
-    console.error('Erro ao atualizar usuário:', error);
-    return NextResponse.json(
-      {
-        message: error?.response?.data?.message || 'Erro ao atualizar usuário',
-      },
       { status: error?.response?.status || 500 }
     );
   }

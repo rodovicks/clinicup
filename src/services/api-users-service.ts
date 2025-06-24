@@ -16,6 +16,12 @@ interface UserResponse {
   totalItems: number;
 }
 
+export const getUser = async (id: string): Promise<User> => {
+  const headers = await getAuthHeaders();
+  const response = await axios.get(`${BASE_URL}/users/${id}`, { headers });
+  return response.data;
+};
+
 export const getUsers = async (page: number = 1): Promise<UserResponse> => {
   const headers = await getAuthHeaders();
   const response = await axios.get(`${BASE_URL}/users`, {
@@ -24,6 +30,19 @@ export const getUsers = async (page: number = 1): Promise<UserResponse> => {
   });
 
   return response.data;
+};
+
+export const confirmEmailChange = async (
+  id: string,
+  code: string
+): Promise<void> => {
+  const headers = await getAuthHeaders();
+
+  await axios.post(
+    `${BASE_URL}/users/${id}/confirm-email-change`,
+    { code },
+    { headers }
+  );
 };
 
 export const saveUser = async (data: User | FormData): Promise<User> => {
@@ -41,21 +60,15 @@ export const updateUser = async (
   id: string,
   data: User | FormData
 ): Promise<User> => {
-  const headers = await getAuthHeaders();
-  const requestConfig = {
-    headers: {
-      ...headers,
-      ...(data instanceof FormData
-        ? {}
-        : { 'Content-Type': 'application/json' }),
-    },
-  };
+  const isFormData = data instanceof FormData;
 
-  const response = await axios.put(
-    `${BASE_URL}/users/${id}`,
-    data,
-    requestConfig
-  );
+  const headers = isFormData
+    ? await getAuthHeadersWithoutContentType()
+    : await getAuthHeaders();
+
+  const response = await axios.put(`${BASE_URL}/users/${id}`, data, {
+    headers,
+  });
   return response.data;
 };
 
@@ -64,4 +77,18 @@ export const deleteUser = async (id: string): Promise<void> => {
   await axios.delete(`${BASE_URL}/users/${id}`, {
     headers,
   });
+};
+
+export const updateUserEmail = async (
+  id: string,
+  email: string
+): Promise<User> => {
+  const headers = await getAuthHeaders();
+
+  const response = await axios.post(
+    `${BASE_URL}/users/${id}/request-password-reset`,
+    email,
+    { headers }
+  );
+  return response.data;
 };

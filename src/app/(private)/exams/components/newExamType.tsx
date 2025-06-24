@@ -153,24 +153,6 @@ export function NewExamType({ examType }: { examType?: any }) {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Controller
-                name="active"
-                control={methods.control}
-                defaultValue={examType?.active ?? true}
-                render={({ field }) => (
-                  <Checkbox
-                    id="active"
-                    checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked)}
-                  />
-                )}
-              />
-              <Label htmlFor="active" className="font-medium">
-                Ativo
-              </Label>
-            </div>
-
             <DialogFooter>
               <Button variant={'primary'} type="submit">
                 Salvar

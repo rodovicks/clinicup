@@ -9,7 +9,7 @@ export type User = {
   role: string;
   expiresOn: string;
   accessToken: string;
-  firstLogin: boolean;
+  tempPassword?: boolean;
 };
 
 declare module 'next-auth' {
@@ -49,7 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               role: data.role,
               expiresOn: data.expiresOn,
               accessToken: data.token,
-              firstLogin: data.firstLogin,
+              tempPassword: data.tempPassword,
             };
           }
 
@@ -91,7 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email;
         token.role = user.role;
         token.expiresOn = user.expiresOn;
-        token.firstLogin = user.firstLogin; // Pass firstLogin to token
+        token.tempPassword = user.tempPassword; // Pass tempPassword to token
       }
       return token;
     },
@@ -101,7 +101,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         name: token.name,
         email: token.email,
         role: token.role,
-        firstLogin: token.firstLogin, // Pass firstLogin to session
+        tempPassword: token.tempPassword, // Pass tempPassword to session
       };
 
       return session;

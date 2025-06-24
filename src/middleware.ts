@@ -22,9 +22,9 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  if (session?.user?.firstLogin && path !== '/set-password') {
+  if (session?.user?.tempPassword && path !== '/change-password') {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/set-password';
+    redirectUrl.pathname = '/change-password';
     return NextResponse.redirect(redirectUrl);
   }
 
