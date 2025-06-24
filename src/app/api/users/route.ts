@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getUsers, saveUser, updateUser } from '@/services/api-users-service';
 
-async function handleFormData(request: Request) {
+export async function handleFormData(request: Request) {
   const formData = await request.formData();
+
+  console.log('FormData received:', formData);
 
   const photo = formData.get('photo') as File | null;
   const userData = formData.get('userData');

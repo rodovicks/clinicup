@@ -12,6 +12,9 @@ interface UploadProps {
 
 export default function Upload({ initialImage, onImageUpload }: UploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  //TODO Colocar um useEffect para pegar a imagem e salvar no useState preview
+
   const [preview, setPreview] = useState<string | null>(initialImage || null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
