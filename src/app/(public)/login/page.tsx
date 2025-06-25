@@ -119,24 +119,29 @@ export default function Login() {
               </p>
             )}
           </div>
-          <div className="flex justify-end mt-4">
-            <Link
-              className="text-sm text-sky-500 hover:underline"
-              href="/reset-password"
-            >
-              Esqueci minha senha
-            </Link>
-          </div>
 
           <Button
             type="submit"
             variant="primary"
-            className="w-full"
+            className="w-full mt-4"
             disabled={loading}
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
+
+        <div className="flex gap-4 mt-4">
+          <Link href="/confirmation" className="w-full">
+            <Button type="button" variant="outline" className="w-full">
+              Confirmar Agendamento
+            </Button>
+          </Link>
+          <Link href="/schedule" className="w-full">
+            <Button type="button" variant="outline" className="w-full">
+              Fila de Agendamento
+            </Button>
+          </Link>
+        </div>
       </Card>
     </div>
   );

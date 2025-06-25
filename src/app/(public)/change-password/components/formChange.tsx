@@ -10,7 +10,7 @@ import * as yup from 'yup';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
@@ -36,6 +36,7 @@ const schema = yup.object().shape({
 export default function FormChangePassword() {
   const [loading, setLoading] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [state, setState] = useState<any>();
 
   const {
     register,
@@ -47,7 +48,7 @@ export default function FormChangePassword() {
   });
 
   const router = useRouter();
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
 
   interface ChangePasswordFormInputs {
     token: string;
@@ -74,7 +75,6 @@ export default function FormChangePassword() {
         'Senha alterada com sucesso. Você será redirecionado para o login.'
       );
 
-      // Fazer logout após alterar a senha
       await signOut({ redirect: false });
       router.push('/login');
     } catch (error: any) {
@@ -87,17 +87,33 @@ export default function FormChangePassword() {
 
   const handleConfirmSubmit = (data: ChangePasswordFormInputs) => {
     setConfirmDialogOpen(true);
-    // Armazena os dados do formulário para submissão após confirmação
-    (window as any).__changePasswordData = data;
+    setState(data);
   };
 
   const handleDialogConfirm = async () => {
     setConfirmDialogOpen(false);
-    if ((window as any).__changePasswordData) {
-      await onSubmit((window as any).__changePasswordData);
-      (window as any).__changePasswordData = undefined;
-    }
+    await onSubmit(state);
   };
+
+  useEffect(() => {
+    const requestToken = async () => {
+      if (!session?.user?.email) {
+        return;
+      }
+      try {
+        await axios.post('/api/request-password-reset', {
+          email: session.user.email,
+        });
+        toast.success('Token enviado para seu email.');
+      } catch (error: any) {
+        console.error('Erro ao solicitar token:', error);
+        toast.error(
+          error.response?.data?.message || 'Erro ao solicitar token.'
+        );
+      }
+    };
+    requestToken();
+  }, [session?.user?.email]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -193,78 +209,25 @@ export default function FormChangePassword() {
             )}
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full mb-2"
-            disabled={loading}
-            onClick={async () => {
-              if (!session?.user?.email) {
-                toast.error('Email não identificado.');
-                return;
-              }
-              try {
-                await axios.post('/api/request-password-reset', {
-                  email: session.user.email,
-                });
-                toast.success('Token enviado para seu email.');
-              } catch (error: any) {
-                console.error('Erro ao solicitar token:', error);
-                toast.error(
-                  error.response?.data?.message || 'Erro ao solicitar token.'
-                );
-              }
-            }}
-          >
-            Solicitar Token
-          </Button>
-
           <div className="flex gap-2">
-            {session?.user?.tempPassword ? (
-              <>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  className="w-full"
-                  disabled={loading}
-                  onClick={async () => {
-                    await signOut({ redirect: false });
-                    router.push('/login');
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="w-full"
-                  disabled={loading}
-                >
-                  {loading ? 'Alterando...' : 'Alterar Senha'}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  className="w-full"
-                  disabled={loading}
-                  onClick={() => router.push('/settings')}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  className="w-full"
-                  disabled={loading}
-                  onClick={handleSubmit(handleConfirmSubmit)}
-                >
-                  {loading ? 'Alterando...' : 'Alterar Senha'}
-                </Button>
-              </>
-            )}
+            <Button
+              type="button"
+              variant="destructive"
+              className="w-full"
+              disabled={loading}
+              onClick={() => router.push('/settings')}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              className="w-full"
+              disabled={loading}
+              onClick={handleSubmit(handleConfirmSubmit)}
+            >
+              {loading ? 'Alterando...' : 'Alterar Senha'}
+            </Button>
           </div>
         </form>
       </Card>

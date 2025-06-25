@@ -1,21 +1,57 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import axios from 'axios';
+import { User2Icon } from 'lucide-react';
 
 interface UploadProps {
   initialImage?: string;
   onImageUpload?: (file: File, preview: string) => void;
 }
 
-export default function Upload({ initialImage, onImageUpload }: UploadProps) {
+function Upload({ initialImage, onImageUpload }: UploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  //TODO Colocar um useEffect para pegar a imagem e salvar no useState preview
+  const [blob, setBlob] = useState<Blob | null>(null);
 
   const [preview, setPreview] = useState<string | null>(initialImage || null);
+
+  useEffect(() => {
+    if (!initialImage) {
+      setBlob(null);
+      return;
+    }
+
+    axios
+      .get('/api/users/photo', {
+        params: { initialImage },
+        responseType: 'blob',
+      })
+      .then((response) => {
+        setBlob(response.data);
+      })
+      .catch(() => {
+        setBlob(null);
+      });
+  }, [initialImage]);
+
+  const imgPreview = useMemo(() => {
+    if (!blob) return null;
+    const url = URL.createObjectURL(blob);
+    setPreview(url);
+    return url;
+  }, [blob]);
+
+  useEffect(() => {
+    return () => {
+      if (imgPreview) {
+        URL.revokeObjectURL(imgPreview);
+      }
+    };
+  }, []);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -31,7 +67,9 @@ export default function Upload({ initialImage, onImageUpload }: UploadProps) {
     <div className="space-y-4">
       <Avatar className="w-24 h-24 mx-auto">
         <AvatarImage src={preview || ''} />
-        <AvatarFallback>IMG</AvatarFallback>
+        <AvatarFallback>
+          <User2Icon />
+        </AvatarFallback>
       </Avatar>
 
       <Input
@@ -55,3 +93,5 @@ export default function Upload({ initialImage, onImageUpload }: UploadProps) {
     </div>
   );
 }
+
+export default React.memo(Upload);

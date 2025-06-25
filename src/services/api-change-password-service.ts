@@ -1,6 +1,7 @@
 'use server';
 
 import axios from 'axios';
+import { getAuthHeaders } from './jwt-service';
 
 const BASE_URL = process.env.BASE_URL || '';
 
@@ -28,6 +29,24 @@ export const requestPasswordResetToken = async (
   const response = await axios.post(
     `${BASE_URL}/auth/request-password-reset`,
     data
+  );
+  return response.data;
+};
+
+interface ChangeTemporaryPasswordData {
+  temporaryPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export const changeTemporaryPassword = async (
+  data: ChangeTemporaryPasswordData
+): Promise<void> => {
+  const headers = await getAuthHeaders();
+  const response = await axios.post(
+    `${BASE_URL}/auth/reset-temporary-password`,
+    data,
+    { headers }
   );
   return response.data;
 };

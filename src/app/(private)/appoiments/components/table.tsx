@@ -1,10 +1,13 @@
 'use client';
 import React, { useEffect } from 'react';
-import { useAppointments } from '@/contexts/appoiments-context';
+import { useAppointments, Appointment } from '@/contexts/appoiments-context';
 import { EditAppointment } from './editAppointment';
-import RemoveAppointment from './removeAppointment';
 
-const AppointmentTable = () => {
+interface AppointmentProps {
+  examTypes: Array<{ id: string; name: string; defaultDuration?: number }>;
+}
+
+const AppointmentTable = ({ examTypes }: AppointmentProps) => {
   const {
     appointments,
     currentPage,
@@ -69,7 +72,10 @@ const AppointmentTable = () => {
               Email
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-              Data do Agendamento
+              Data de Início
+            </th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+              Data de Término
             </th>
             <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
               Status
@@ -82,7 +88,7 @@ const AppointmentTable = () => {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={6} className="text-center py-6 text-gray-500">
+              <td colSpan={7} className="text-center py-6 text-gray-500">
                 Carregando agendamentos...
               </td>
             </tr>
@@ -99,7 +105,19 @@ const AppointmentTable = () => {
                   {appointment.patient_email}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {new Date(appointment.date).toLocaleDateString('pt-BR', {
+                  {new Date(appointment.date_start).toLocaleDateString(
+                    'pt-BR',
+                    {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }
+                  )}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {new Date(appointment.date_end).toLocaleDateString('pt-BR', {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit',
@@ -117,8 +135,15 @@ const AppointmentTable = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700 flex items-center gap-2">
-                  <EditAppointment appointment={appointment} />
-                  <RemoveAppointment appointmentId={appointment.id || ''} />
+                  {appointment.id && (
+                    <EditAppointment
+                      appointment={
+                        appointment as Required<Pick<Appointment, 'id'>> &
+                          Appointment
+                      }
+                      examTypes={examTypes}
+                    />
+                  )}
                 </td>
               </tr>
             ))
@@ -129,7 +154,7 @@ const AppointmentTable = () => {
       <div className="flex items-center justify-center gap-4 mt-8">
         <button
           onClick={handlePrevious}
-          disabled={Number(currentPage) === 1}
+          disabled={Number(currentPage) <= 1}
           className={`px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 ${
             Number(currentPage) === 1 ? 'opacity-50 cursor-not-allowed' : ''
           }`}
@@ -141,9 +166,11 @@ const AppointmentTable = () => {
         </span>
         <button
           onClick={handleNext}
-          disabled={Number(currentPage) === Number(totalPages)}
+          disabled={
+            Number(currentPage) === Number(totalPages) || totalPages === 0
+          }
           className={`px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 ${
-            Number(currentPage) === Number(totalPages)
+            Number(currentPage) === Number(totalPages) || totalPages === 0
               ? 'opacity-50 cursor-not-allowed'
               : ''
           }`}

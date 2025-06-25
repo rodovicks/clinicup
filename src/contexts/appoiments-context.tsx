@@ -13,7 +13,8 @@ export interface Appointment {
   patient_birth_date: string;
   userId: string;
   examsTypeId: string;
-  date: string;
+  date_start: string;
+  date_end: string;
   status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   details: string;
   createdAt?: string;

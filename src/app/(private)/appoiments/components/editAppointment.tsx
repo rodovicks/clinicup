@@ -11,13 +11,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
+import { useForm, SubmitHandler, FormProvider, set } from 'react-hook-form';
 import { useAppointments } from '@/contexts/appoiments-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import * as yup from 'yup';
 import { Edit } from 'lucide-react';
+import { Appointment } from '@/contexts/appoiments-context';
+
+type FormData = Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>;
 
 const schema = yup.object().shape({
   patient_name: yup.string().required('Nome do paciente é obrigatório'),
@@ -25,41 +27,45 @@ const schema = yup.object().shape({
     .string()
     .email('E-mail inválido')
     .required('E-mail é obrigatório'),
-  date: yup.string().required('Data é obrigatória'),
   patient_cpf: yup.string().required('CPF é obrigatório'),
   patient_phone: yup.string().required('Telefone é obrigatório'),
   patient_birth_date: yup.string().required('Data de nascimento é obrigatória'),
+  date_start: yup.string().required('Data de início é obrigatória'),
+  date_end: yup.string().required('Data de término é obrigatória'),
+  examsTypeId: yup.string().required('Tipo de exame é obrigatório'),
 });
 
-type FormData = {
-  patient_name: string;
-  patient_email: string;
-  date: string;
-  patient_cpf: string;
-  patient_phone: string;
-  patient_birth_date: string;
-  userId: string;
-  examsTypeId: string;
-  status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
-  details: string;
+const maskCPF = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1');
 };
 
-export function EditAppointment({ appointment }: { appointment: any }) {
+const maskPhone = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2');
+};
+
+interface AppointmentProps {
+  examTypes: Array<{ id: string; name: string; defaultDuration?: number }>;
+}
+
+export function EditAppointment({
+  appointment,
+  examTypes,
+}: {
+  appointment: Required<Pick<Appointment, 'id'>> & Appointment;
+  examTypes: AppointmentProps['examTypes'];
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [examTypes, setExamTypes] = useState([]);
-
-  useEffect(() => {
-    const fetchExamTypes = async () => {
-      try {
-        const response = await axios.get('/api/exam/types');
-        setExamTypes(response.data.data || []);
-      } catch (error) {
-        console.error('Erro ao buscar tipos de exame:', error);
-      }
-    };
-    fetchExamTypes();
-  }, []);
+  const [examDuration, setExamDuration] = useState<number | null>(null);
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema as yup.ObjectSchema<FormData>),
@@ -67,7 +73,8 @@ export function EditAppointment({ appointment }: { appointment: any }) {
     defaultValues: {
       patient_name: appointment?.patient_name || '',
       patient_email: appointment?.patient_email || '',
-      date: appointment?.date || '',
+      date_start: appointment?.date_start || '',
+      date_end: appointment?.date_end || '',
       patient_cpf: appointment?.patient_cpf || '',
       patient_phone: appointment?.patient_phone || '',
       patient_birth_date: appointment?.patient_birth_date || '',
@@ -87,7 +94,11 @@ export function EditAppointment({ appointment }: { appointment: any }) {
   const { updateAppointment } = useAppointments();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    await updateAppointment(appointment.id, data);
+    if (!appointment.id) return;
+    await updateAppointment(appointment.id, {
+      ...data,
+      status: appointment.status || 'SCHEDULED',
+    });
     setIsDialogOpen(false);
   };
 
@@ -95,6 +106,18 @@ export function EditAppointment({ appointment }: { appointment: any }) {
     methods.reset();
     setIsDialogOpen(!isDialogOpen);
   };
+
+  useEffect(() => {
+    if (isDialogOpen === false) {
+      setExamDuration(null);
+    }
+
+    const defaultExamTypes = examTypes.find(
+      (exam) => exam.id === methods.getValues('examsTypeId')
+    );
+
+    setExamDuration(defaultExamTypes?.defaultDuration || null);
+  }, [isDialogOpen]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleClose}>
@@ -104,7 +127,7 @@ export function EditAppointment({ appointment }: { appointment: any }) {
         </button>
       </DialogTrigger>
       <FormProvider {...methods}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[800px]">
           <DialogHeader>
             <DialogTitle>Editar Agendamento</DialogTitle>
             <DialogDescription>
@@ -113,7 +136,7 @@ export function EditAppointment({ appointment }: { appointment: any }) {
           </DialogHeader>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-6 py-4"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-4"
           >
             <div className="flex flex-col gap-2">
               <Label htmlFor="patient_name" className="font-medium">
@@ -127,8 +150,25 @@ export function EditAppointment({ appointment }: { appointment: any }) {
               )}
             </div>
             <div className="flex flex-col gap-2">
+              <Label htmlFor="patient_cpf" className="font-medium">
+                CPF
+              </Label>
+              <Input
+                id="patient_cpf"
+                {...register('patient_cpf')}
+                onChange={(e) =>
+                  methods.setValue('patient_cpf', maskCPF(e.target.value))
+                }
+              />
+              {errors.patient_cpf && (
+                <span className="text-red-500 text-sm">
+                  {errors.patient_cpf.message}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
               <Label htmlFor="patient_email" className="font-medium">
-                E-mail do Paciente
+                E-mail
               </Label>
               <Input
                 id="patient_email"
@@ -141,18 +181,6 @@ export function EditAppointment({ appointment }: { appointment: any }) {
                 </span>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="date" className="font-medium">
-                Data do Agendamento
-              </Label>
-              <Input id="date" type="datetime-local" {...register('date')} />
-              {errors.date && (
-                <span className="text-red-500 text-sm">
-                  {errors.date.message}
-                </span>
-              )}
-            </div>
-
             <div className="flex flex-col gap-2">
               <Label htmlFor="patient_birth_date" className="font-medium">
                 Data de Nascimento
@@ -176,6 +204,13 @@ export function EditAppointment({ appointment }: { appointment: any }) {
                 id="examsTypeId"
                 {...register('examsTypeId')}
                 className="border border-gray-300 rounded-md p-2"
+                onChange={(e) => {
+                  const selectedExam = examTypes.find(
+                    (exam) => exam.id === e.target.value
+                  );
+                  setExamDuration(selectedExam?.defaultDuration || null);
+                  methods.setValue('examsTypeId', e.target.value);
+                }}
               >
                 <option value="">Selecione um tipo de exame</option>
                 {examTypes.map((exam: any) => (
@@ -190,11 +225,109 @@ export function EditAppointment({ appointment }: { appointment: any }) {
                 </span>
               )}
             </div>
-            <DialogFooter>
-              <Button variant={'primary'} type="submit">
-                Salvar
-              </Button>
-            </DialogFooter>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="patient_phone" className="font-medium">
+                Telefone
+              </Label>
+              <Input
+                id="patient_phone"
+                {...register('patient_phone')}
+                onChange={(e) =>
+                  methods.setValue('patient_phone', maskPhone(e.target.value))
+                }
+              />
+              {errors.patient_phone && (
+                <span className="text-red-500 text-sm">
+                  {errors.patient_phone.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="date_start" className="font-medium">
+                Data e Hora de Início
+              </Label>
+              <Input
+                id="date_start"
+                type="datetime-local"
+                {...register('date_start')}
+                defaultValue={new Date(appointment?.date_end).toString()}
+                onChange={(e) => {
+                  methods.setValue('date_start', e.target.value);
+
+                  const currentExamType = examTypes.find(
+                    (exam) => exam.id === methods.getValues('examsTypeId')
+                  );
+                  const examDuration = currentExamType?.defaultDuration;
+
+                  if (examDuration && e.target.value) {
+                    const startDateTime = new Date(e.target.value);
+                    const endDateTime = new Date(
+                      startDateTime.getTime() + examDuration * 60000
+                    );
+
+                    const year = endDateTime.getFullYear();
+                    const month = String(endDateTime.getMonth() + 1).padStart(
+                      2,
+                      '0'
+                    );
+                    const day = String(endDateTime.getDate()).padStart(2, '0');
+                    const hours = String(endDateTime.getHours()).padStart(
+                      2,
+                      '0'
+                    );
+                    const minutes = String(endDateTime.getMinutes()).padStart(
+                      2,
+                      '0'
+                    );
+
+                    const formattedEndDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    methods.setValue('date_end', formattedEndDateTime);
+                  }
+                }}
+              />
+              {errors.date_start && (
+                <span className="text-red-500 text-sm">
+                  {errors.date_start.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="date_end" className="font-medium">
+                Data e Hora de Término
+              </Label>
+              <Input
+                id="date_end"
+                type="datetime-local"
+                defaultValue={new Date(appointment?.date_end).toString()}
+                {...register('date_end')}
+              />
+              {errors.date_end && (
+                <span className="text-red-500 text-sm">
+                  {errors.date_end.message}
+                </span>
+              )}
+              {examDuration && (
+                <span className="text-gray-500 text-sm">
+                  Duração estimada: {examDuration} minutos
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="details" className="font-medium">
+                Detalhes
+              </Label>
+              <Input id="details" {...register('details')} />
+            </div>
+            <div className="col-span-2 flex justify-end">
+              <DialogFooter>
+                <Button variant={'primary'} type="submit">
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </FormProvider>

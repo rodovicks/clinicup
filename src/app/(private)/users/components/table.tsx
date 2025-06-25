@@ -89,9 +89,9 @@ const UserTable = () => {
       <div className="flex items-center justify-center gap-4 mt-8">
         <button
           onClick={handlePrevious}
-          disabled={Number(currentPage) === 1}
+          disabled={Number(currentPage) <= 1}
           className={`px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 ${
-            Number(currentPage) === 1 ? 'opacity-50 cursor-not-allowed' : ''
+            Number(currentPage) <= 1 ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           Anterior
@@ -101,9 +101,11 @@ const UserTable = () => {
         </span>
         <button
           onClick={handleNext}
-          disabled={Number(currentPage) === Number(totalPages)}
+          disabled={
+            Number(currentPage) === Number(totalPages) || totalPages === 0
+          }
           className={`px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 ${
-            Number(currentPage) === Number(totalPages)
+            Number(currentPage) === Number(totalPages) || totalPages === 0
               ? 'opacity-50 cursor-not-allowed'
               : ''
           }`}

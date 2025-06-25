@@ -26,9 +26,24 @@ export function useLogin() {
       if (result?.error) {
         let errorMessage = result.error;
 
-        if (result.error.includes('fetch')) {
+        // Tratamento para erros conhecidos da API
+        if (
+          errorMessage.includes('E-mail ou senha inválidos') ||
+          errorMessage.includes('Senha inválida') ||
+          errorMessage.includes('Usuário não encontrado')
+        ) {
+          toast.error(errorMessage);
+          return { success: false, error: errorMessage };
+        }
+
+        // Tratamento para erros internos / genéricos
+        if (errorMessage.includes('Configuration')) {
+          errorMessage = 'Erro de configuração do login';
+        } else if (errorMessage.includes('CredentialsSignin')) {
+          errorMessage = 'Usuário ou senha incorretos';
+        } else if (errorMessage.includes('fetch')) {
           errorMessage = 'Erro de conexão com o servidor';
-        } else if (result.error.includes('JSON')) {
+        } else if (errorMessage.includes('JSON')) {
           errorMessage = 'Erro na resposta do servidor';
         }
 
@@ -41,9 +56,9 @@ export function useLogin() {
         return { success: true };
       }
 
-      const errorMessage = 'Falha na autenticação';
-      toast.error(errorMessage);
-      return { success: false, error: errorMessage };
+      const fallbackError = 'Falha na autenticação';
+      toast.error(fallbackError);
+      return { success: false, error: fallbackError };
     } catch (error: any) {
       console.error('Erro no hook de login:', error);
       const errorMessage = error.message || 'Erro interno durante o login';

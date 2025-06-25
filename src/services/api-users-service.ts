@@ -32,6 +32,17 @@ export const getUsers = async (page: number = 1): Promise<UserResponse> => {
   return response.data;
 };
 
+export const getUploadPhoto = async (initialImage?: string) => {
+  const headers = await getAuthHeaders();
+
+  const response = await axios.get(`${BASE_URL}/${initialImage}`, {
+    headers,
+    responseType: 'arraybuffer',
+  });
+
+  return response;
+};
+
 export const confirmEmailChange = async (
   id: string,
   code: string

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
 
 const ConfirmationPage = () => {
   const [cpf, setCpf] = useState('');
@@ -17,10 +18,8 @@ const ConfirmationPage = () => {
 
   const handleCpfSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulate fetching patient data
-    const response = await fetch(`/api/patient?cpf=${cpf}`);
-    const data = await response.json();
-    setPatientData(data);
+    const response = await axios.get(`/api/patient?cpf=${cpf}`);
+    setPatientData(response.data);
     setShowWelcome(true);
   };
 
@@ -30,7 +29,7 @@ const ConfirmationPage = () => {
         setCpf('');
         setPatientData(null);
         setShowWelcome(false);
-      }, 10000); // Reset after 10 seconds
+      }, 10000);
       return () => clearTimeout(timeout);
     }
   }, [showWelcome]);
@@ -44,7 +43,7 @@ const ConfirmationPage = () => {
               Bem-vindo à Clínica
             </h1>
           </div>
-          <form className="space-y-4" onSubmit={handleCpfSubmit}>
+          <form className="space-y-4">
             <div>
               <Label
                 htmlFor="cpf"
@@ -87,9 +86,10 @@ const ConfirmationPage = () => {
               </div>
             </div>
             <Button
-              type="submit"
+              type="button"
               variant="primary"
               className="w-full py-8 text-2xl"
+              onClick={() => handleCpfSubmit}
             >
               CONFIRMAR
             </Button>

@@ -16,21 +16,38 @@ import { useAppointments } from '@/contexts/appoiments-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import React from 'react';
 import { useSession } from 'next-auth/react';
 
+const maskCPF = (value: string) => {
+  return value
+    .replace(/\D/g, '') // Remove tudo que não é dígito
+    .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto após 3 dígitos
+    .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto após 3 dígitos
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2') // Coloca hífen entre os dois últimos
+    .replace(/(-\d{2})\d+?$/, '$1'); // Remove dígitos excedentes
+};
+
+const maskPhone = (value: string) => {
+  return value
+    .replace(/\D/g, '') // Remove tudo que não é dígito
+    .slice(0, 11) // Limita a 11 dígitos
+    .replace(/(\d{2})(\d)/, '($1) $2') // Coloca parênteses em torno dos dois primeiros dígitos
+    .replace(/(\d{5})(\d)/, '$1-$2'); // Coloca hífen entre os dois últimos
+};
+
 const schema = yup.object().shape({
   patient_name: yup.string().required('Nome do paciente é obrigatório'),
-  patient_cpf: yup
-    .string()
-    .required('CPF é obrigatório')
-    .matches(/^\d{11}$/, 'CPF deve conter 11 dígitos'),
+  patient_cpf: yup.string().required('CPF é obrigatório'),
   patient_email: yup
     .string()
     .email('E-mail inválido')
     .required('E-mail é obrigatório'),
-  date: yup.string().required('Data do agendamento é obrigatória'),
+  patient_phone: yup.string().required('Telefone é obrigatório'),
+  patient_birth_date: yup.string().required('Data de nascimento é obrigatória'),
+  examsTypeId: yup.string().required('Tipo de exame é obrigatório'),
+  date_start: yup.string().required('Data do agendamento é obrigatória'),
+  date_end: yup.string().required('Data do agendamento é obrigatória'),
 });
 
 type FormData = {
@@ -41,33 +58,23 @@ type FormData = {
   patient_birth_date: string;
   userId: string;
   examsTypeId: string;
-  date: string;
+  date_start: string;
+  date_end: string;
   status: 'SCHEDULED';
   details: string;
 };
 
-export const NewAppointment = React.memo(function NewAppointment() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+interface AppointmentProps {
+  examTypes: Array<{ id: string; name: string; defaultDuration?: number }>;
+}
 
-  const [examTypes, setExamTypes] = useState<
-    Array<{ id: string; name: string; defaultDuration?: number }>
-  >([]);
+export const NewAppointment = React.memo(function NewAppointment({
+  examTypes,
+}: AppointmentProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [examDuration, setExamDuration] = useState<number | null>(null);
 
   const { data: session } = useSession();
-
-  useEffect(() => {
-    const fetchExamTypes = async () => {
-      try {
-        const response = await axios.get('/api/exam/types');
-        setExamTypes(response.data.data || []);
-      } catch (error) {
-        console.error('Erro ao buscar tipos de exame:', error);
-      }
-    };
-
-    fetchExamTypes();
-  }, []);
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema as yup.ObjectSchema<FormData>),
@@ -80,7 +87,8 @@ export const NewAppointment = React.memo(function NewAppointment() {
       patient_birth_date: '',
       userId: '',
       examsTypeId: '',
-      date: '',
+      date_start: '',
+      date_end: '',
       status: 'SCHEDULED',
       details: '',
     },
@@ -96,6 +104,9 @@ export const NewAppointment = React.memo(function NewAppointment() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     data.userId = session?.user?.id || '';
+    data.status = 'SCHEDULED';
+    data.date_start = new Date(data.date_start).toISOString();
+    data.date_end = new Date(data.date_end).toISOString();
     await saveAppointment(data);
     setIsDialogOpen(false);
   };
@@ -105,6 +116,13 @@ export const NewAppointment = React.memo(function NewAppointment() {
     setIsDialogOpen(!isDialogOpen);
   };
 
+  useEffect(() => {
+    if (isDialogOpen === false) {
+      setExamDuration(null);
+      return;
+    }
+  }, [isDialogOpen]);
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
@@ -113,7 +131,7 @@ export const NewAppointment = React.memo(function NewAppointment() {
         </Button>
       </DialogTrigger>
       <FormProvider {...methods}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
             <DialogTitle>Cadastro de Agendamento</DialogTitle>
             <DialogDescription>
@@ -122,7 +140,7 @@ export const NewAppointment = React.memo(function NewAppointment() {
           </DialogHeader>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-6 py-4"
+            className="grid grid-cols-2 gap-6 py-4"
           >
             <div className="flex flex-col gap-2">
               <Label htmlFor="patient_name" className="font-medium">
@@ -139,7 +157,13 @@ export const NewAppointment = React.memo(function NewAppointment() {
               <Label htmlFor="patient_cpf" className="font-medium">
                 CPF
               </Label>
-              <Input id="patient_cpf" {...register('patient_cpf')} />
+              <Input
+                id="patient_cpf"
+                {...register('patient_cpf')}
+                onChange={(e) =>
+                  methods.setValue('patient_cpf', maskCPF(e.target.value))
+                }
+              />
               {errors.patient_cpf && (
                 <span className="text-red-500 text-sm">
                   {errors.patient_cpf.message}
@@ -201,21 +225,88 @@ export const NewAppointment = React.memo(function NewAppointment() {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="date" className="font-medium">
-                Data do Agendamento
+              <Label htmlFor="patient_phone" className="font-medium">
+                Telefone
               </Label>
-              <Input id="date" type="datetime-local" {...register('date')} />
+              <Input
+                id="patient_phone"
+                {...register('patient_phone')}
+                onChange={(e) =>
+                  methods.setValue('patient_phone', maskPhone(e.target.value))
+                }
+              />
+              {errors.patient_phone && (
+                <span className="text-red-500 text-sm">
+                  {errors.patient_phone.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="date_start" className="font-medium">
+                Data e Hora de Início
+              </Label>
+              <Input
+                id="date_start"
+                type="datetime-local"
+                {...register('date_start')}
+                onChange={(e) => {
+                  methods.setValue('date_start', e.target.value);
+                  if (examDuration && e.target.value) {
+                    // Adicionar minutos diretamente ao horário de início
+                    const startDateTime = new Date(e.target.value);
+                    const endDateTime = new Date(
+                      startDateTime.getTime() + examDuration * 60000
+                    );
+
+                    // Formatar para datetime-local
+                    const year = endDateTime.getFullYear();
+                    const month = String(endDateTime.getMonth() + 1).padStart(
+                      2,
+                      '0'
+                    );
+                    const day = String(endDateTime.getDate()).padStart(2, '0');
+                    const hours = String(endDateTime.getHours()).padStart(
+                      2,
+                      '0'
+                    );
+                    const minutes = String(endDateTime.getMinutes()).padStart(
+                      2,
+                      '0'
+                    );
+
+                    const formattedEndDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    methods.setValue('date_end', formattedEndDateTime);
+                  }
+                }}
+              />
+              {errors.date_start && (
+                <span className="text-red-500 text-sm">
+                  {errors.date_start.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="date_end" className="font-medium">
+                Data e Hora de Término
+              </Label>
+              <Input
+                id="date_end"
+                type="datetime-local"
+                {...register('date_end')}
+              />
+              {errors.date_end && (
+                <span className="text-red-500 text-sm">
+                  {errors.date_end.message}
+                </span>
+              )}
               {examDuration && (
                 <span className="text-gray-500 text-sm">
                   Duração estimada: {examDuration} minutos
                 </span>
               )}
             </div>
-            {errors.date && (
-              <span className="text-red-500 text-sm">
-                {errors.date.message}
-              </span>
-            )}
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="details" className="font-medium">

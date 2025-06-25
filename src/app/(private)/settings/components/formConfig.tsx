@@ -229,12 +229,11 @@ function FormConfig() {
           </div>
         )}
       </form>
-      <div className="flex justify-end mt-4">
+      <div className="flex mt-4">
         <Button
           type="button"
           variant="primary"
           onClick={() => {
-            // Redireciona para a tela de alteração de senha
             window.location.href = '/change-password';
           }}
         >
