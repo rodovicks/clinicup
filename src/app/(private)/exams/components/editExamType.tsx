@@ -49,6 +49,7 @@ type FormData = {
 
 export function EditExamType({ examType }: { examType?: any }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema as yup.ObjectSchema<FormData>),
@@ -71,9 +72,14 @@ export function EditExamType({ examType }: { examType?: any }) {
   const { updateExamType } = useExamTypes();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log('teste', data);
-    await updateExamType(examType.id, data);
-    setIsDialogOpen(false);
+    setIsLoading(true);
+    try {
+      console.log('teste', data);
+      await updateExamType(examType.id, data);
+      setIsDialogOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -172,8 +178,8 @@ export function EditExamType({ examType }: { examType?: any }) {
             </div>
 
             <DialogFooter>
-              <Button variant={'primary'} type="submit">
-                Salvar
+              <Button variant={'primary'} type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar'}
               </Button>
             </DialogFooter>
           </form>

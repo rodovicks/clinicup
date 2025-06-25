@@ -34,6 +34,7 @@ type FormData = {
 
 export function NewUser({ user }: { user?: any }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema as yup.ObjectSchema<FormData>),
@@ -56,25 +57,30 @@ export function NewUser({ user }: { user?: any }) {
   const { saveUser } = useUsers();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log('Form data submitted:', data);
-    const formData = new FormData();
+    setIsLoading(true);
+    try {
+      console.log('Form data submitted:', data);
+      const formData = new FormData();
 
-    const userData = {
-      name: data.name,
-      email: data.email,
-      birth_date: data.birth_date,
-      role: data.role,
-    };
-    formData.append('userData', JSON.stringify(userData));
+      const userData = {
+        name: data.name,
+        email: data.email,
+        birth_date: data.birth_date,
+        role: data.role,
+      };
+      formData.append('userData', JSON.stringify(userData));
 
-    const fileInput = document.getElementById('photo') as HTMLInputElement;
-    const file = fileInput?.files?.[0];
-    if (file) {
-      formData.append('photo', file);
+      const fileInput = document.getElementById('photo') as HTMLInputElement;
+      const file = fileInput?.files?.[0];
+      if (file) {
+        formData.append('photo', file);
+      }
+
+      await saveUser(formData);
+      setIsDialogOpen(false);
+    } finally {
+      setIsLoading(false);
     }
-
-    await saveUser(formData);
-    setIsDialogOpen(false);
   };
 
   const handleClose = () => {
@@ -136,8 +142,8 @@ export function NewUser({ user }: { user?: any }) {
               )}
             </div>
             <DialogFooter>
-              <Button variant={'primary'} type="submit">
-                Salvar
+              <Button variant={'primary'} type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar'}
               </Button>
             </DialogFooter>
           </form>

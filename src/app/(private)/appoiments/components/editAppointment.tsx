@@ -64,6 +64,7 @@ export function EditAppointment({
   examTypes: AppointmentProps['examTypes'];
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [examDuration, setExamDuration] = useState<number | null>(null);
 
@@ -95,11 +96,16 @@ export function EditAppointment({
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     if (!appointment.id) return;
-    await updateAppointment(appointment.id, {
-      ...data,
-      status: appointment.status || 'SCHEDULED',
-    });
-    setIsDialogOpen(false);
+    setIsLoading(true);
+    try {
+      await updateAppointment(appointment.id, {
+        ...data,
+        status: appointment.status || 'SCHEDULED',
+      });
+      setIsDialogOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -323,8 +329,8 @@ export function EditAppointment({
             </div>
             <div className="col-span-2 flex justify-end">
               <DialogFooter>
-                <Button variant={'primary'} type="submit">
-                  Salvar
+                <Button variant={'primary'} type="submit" disabled={isLoading}>
+                  {isLoading ? 'Salvando...' : 'Salvar'}
                 </Button>
               </DialogFooter>
             </div>

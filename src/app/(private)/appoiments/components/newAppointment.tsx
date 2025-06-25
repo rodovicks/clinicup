@@ -72,6 +72,7 @@ export const NewAppointment = React.memo(function NewAppointment({
   examTypes,
 }: AppointmentProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [examDuration, setExamDuration] = useState<number | null>(null);
 
   const { data: session } = useSession();
@@ -103,12 +104,17 @@ export const NewAppointment = React.memo(function NewAppointment({
   const { saveAppointment } = useAppointments();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    data.userId = session?.user?.id || '';
-    data.status = 'SCHEDULED';
-    data.date_start = new Date(data.date_start).toISOString();
-    data.date_end = new Date(data.date_end).toISOString();
-    await saveAppointment(data);
-    setIsDialogOpen(false);
+    setIsLoading(true);
+    try {
+      data.userId = session?.user?.id || '';
+      data.status = 'SCHEDULED';
+      data.date_start = new Date(data.date_start).toISOString();
+      data.date_end = new Date(data.date_end).toISOString();
+      await saveAppointment(data);
+      setIsDialogOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -315,8 +321,8 @@ export const NewAppointment = React.memo(function NewAppointment({
               <Input id="details" {...register('details')} />
             </div>
             <DialogFooter>
-              <Button variant={'primary'} type="submit">
-                Salvar
+              <Button variant={'primary'} type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar'}
               </Button>
             </DialogFooter>
           </form>

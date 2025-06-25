@@ -10,7 +10,7 @@ import * as yup from 'yup';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Nome é obrigatório'),
@@ -43,6 +43,8 @@ export default function Register() {
     mode: 'onChange',
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
   interface SetupFormInputs {
@@ -53,6 +55,7 @@ export default function Register() {
   }
 
   const onSubmit = async (data: SetupFormInputs) => {
+    setIsLoading(true);
     try {
       const response = await axios.post('/api/register', data);
 
@@ -64,6 +67,8 @@ export default function Register() {
       }
     } catch (error) {
       toast.error('Erro ao configurar o sistema.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,8 +179,13 @@ export default function Register() {
               </p>
             )}
           </div>
-          <Button type="submit" variant="primary" className="w-full">
-            Configurar
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Configurando...' : 'Configurar'}
           </Button>
         </form>
       </Card>
