@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { confirmAppointment } from '@/services/api-appointments-confirmation-service';
 
-export async function GET(
+export async function POST(
   request: Request,
   { params }: { params: { cpf: string } }
 ) {
   try {
-    const cpf = params.cpf;
+    const cpf = await params.cpf;
+    console.log(cpf, 'CPF from params');
     const data = await confirmAppointment(cpf);
     return NextResponse.json(data);
   } catch (error: any) {

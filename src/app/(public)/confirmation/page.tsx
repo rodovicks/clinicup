@@ -18,7 +18,7 @@ const ConfirmationPage = () => {
 
   const handleCpfSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const response = await axios.get(`/api/patient?cpf=${cpf}`);
+    const response = await axios.post(`/api/appointments/confirmed/${cpf}`);
     setPatientData(response.data);
     setShowWelcome(true);
   };
@@ -43,7 +43,7 @@ const ConfirmationPage = () => {
               Bem-vindo à Clínica
             </h1>
           </div>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleCpfSubmit}>
             <div>
               <Label
                 htmlFor="cpf"
@@ -67,6 +67,7 @@ const ConfirmationPage = () => {
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
                   <Button
                     key={num}
+                    type="button"
                     onClick={() =>
                       setCpf((prev) =>
                         prev.length < 11 ? prev + num.toString() : prev
@@ -78,6 +79,7 @@ const ConfirmationPage = () => {
                   </Button>
                 ))}
                 <Button
+                  type="button"
                   onClick={() => setCpf((prev) => prev.slice(0, -1))}
                   className="py-8 col-span-2 text-2xl bg-red-500 text-white"
                 >
@@ -86,10 +88,9 @@ const ConfirmationPage = () => {
               </div>
             </div>
             <Button
-              type="button"
+              type="submit"
               variant="primary"
               className="w-full py-8 text-2xl"
-              onClick={() => handleCpfSubmit}
             >
               CONFIRMAR
             </Button>
@@ -106,7 +107,7 @@ const ConfirmationPage = () => {
             Exames de hoje:
           </h2>
           <ul className="space-y-2">
-            {patientData?.exams.map(
+            {patientData?.exams?.map(
               (exam: { name: string; time: string }, index: number) => (
                 <li key={index} className="text-sm text-gray-700">
                   {exam.name} - {exam.time}
