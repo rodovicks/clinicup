@@ -13,12 +13,26 @@ interface AppointmentsResponse {
   totalItems: number;
 }
 export const getAppointments = async (
-  page: number = 1
+  page: number = 1,
+  filters?: {
+    search?: string;
+    examsTypeId?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }
 ): Promise<AppointmentsResponse> => {
-  const headers = await getAuthHeaders();
+  const params: any = { page };
+
+  if (filters?.search) params.search = filters.search;
+  if (filters?.examsTypeId) params.examsTypeId = filters.examsTypeId;
+  if (filters?.status) params.status = filters.status;
+  if (filters?.startDate) params.startDate = filters.startDate;
+  if (filters?.endDate) params.endDate = filters.endDate;
+
   const response = await axios.get(`${BASE_URL}/appoiments`, {
-    headers,
-    params: { page },
+    headers: { 'Content-Type': 'application/json' },
+    params,
   });
 
   return response.data;
@@ -49,4 +63,20 @@ export const deleteAppointment = async (id: string) => {
   await axios.delete(`${BASE_URL}/appoiments/${id}`, {
     headers,
   });
+};
+
+export const updateAppointmentStatus = async (
+  id: string,
+  statusUpdate: { status: string }
+): Promise<Appointment> => {
+  const headers = await getAuthHeaders();
+  const response = await axios.patch(
+    `${BASE_URL}/appoiments/${id}/status`,
+    statusUpdate,
+    {
+      headers,
+    }
+  );
+
+  return response.data;
 };

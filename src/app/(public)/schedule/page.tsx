@@ -38,6 +38,9 @@ const SchedulePage = () => {
     };
 
     loadData();
+
+    const interval = setInterval(loadData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const filteredAppointments = appointments.filter((appointment) =>
@@ -45,7 +48,7 @@ const SchedulePage = () => {
   );
 
   const completedAppointments = appointments.filter(
-    (appointment) => appointment.status === 'COMPLETED'
+    (appointment) => appointment.status === 'CONFIRMED'
   );
 
   return (
@@ -102,17 +105,41 @@ const SchedulePage = () => {
               )}
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-sky-500">Agendamentos</h1>
-          <p className="text-gray-700 text-2xl">
-            {currentDateTime.toLocaleString()}
-          </p>
+          <div className="flex items-center justify-around">
+            <div className="rounded-md bg-gray-200 p-8">
+              <h2 className="text-xl font-bold text-sky-500 mt-4">
+                Tempo padrão do exame{' '}
+              </h2>
+              <p className="text-gray-700 text-2xl">
+                {
+                  examTypes.find((type) => type.id === currentCall?.examsTypeId)
+                    ?.defaultDuration
+                }{' '}
+                minutos
+              </p>
+            </div>
+            <div className="rounded-md bg-gray-200 p-8">
+              <h1 className="text-2xl font-bold text-sky-500">Agendamentos</h1>
+              <p className="text-gray-700 text-2xl">
+                {currentDateTime.toLocaleString()}
+              </p>
+            </div>
+            <div className="rounded-md bg-gray-200 p-8">
+              <h2 className="text-xl font-bold text-sky-500 mt-4">
+                Tempo médio de atendimento{' '}
+              </h2>
+              <p className="text-gray-700 text-2xl">20 minutos</p>
+            </div>
+          </div>
         </header>
         <div className="mb-6 text-center">
           <h2 className="text-6xl font-bold mb-4 text-sky-500">
             {currentCall?.patient_name ?? 'Nenhum paciente em atendimento'}
           </h2>
-          <p className="text-3xl text-gray-700 mb-4">
-            Exame: {currentCall?.examsTypeId ?? 'Nenhum exame encontrado'}
+          <p className="text-2xl text-gray-700 mb-4">
+            Exame:{' '}
+            {examTypes.find((type) => type.id === currentCall?.examsTypeId)
+              ?.name ?? 'Nenhum exame encontrado'}
           </p>
         </div>
         <div className="flex gap-8">
@@ -135,10 +162,14 @@ const SchedulePage = () => {
                       {appointment.patient_name}
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {appointment.examsTypeId}
+                      {
+                        examTypes.find(
+                          (type) => type.id === appointment.examsTypeId
+                        )?.name
+                      }
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {appointment.date}
+                      {appointment.date_start}
                     </td>
                   </tr>
                 ))}
@@ -166,10 +197,14 @@ const SchedulePage = () => {
                       {appointment.patient_name}
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {appointment.examsTypeId}
+                      {
+                        examTypes.find(
+                          (type) => type.id === appointment.examsTypeId
+                        )?.name
+                      }
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {appointment.date}
+                      {appointment.date_start}
                     </td>
                     <td className="border border-gray-300 p-2">
                       {appointment.createdAt}

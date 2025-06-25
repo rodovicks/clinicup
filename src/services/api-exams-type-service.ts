@@ -16,9 +16,8 @@ export interface ExamsTypeResponse {
 export const getExamTypes = async (
   page: number = 1
 ): Promise<ExamsTypeResponse> => {
-  const headers = await getAuthHeaders();
   const response = await axios.get(`${BASE_URL}/exams-types`, {
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     params: { page },
   });
 

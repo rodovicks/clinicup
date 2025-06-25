@@ -354,7 +354,7 @@ export function EditAppointment({
             <div className="col-span-2 flex justify-end">
               <DialogFooter>
                 <Button variant={'primary'} type="submit" disabled={isLoading}>
-                  {isLoading ? 'Salvando...' : 'Salvar'}
+                  {isLoading ? 'Salvando...' : 'Confirmar dados'}
                 </Button>
               </DialogFooter>
             </div>

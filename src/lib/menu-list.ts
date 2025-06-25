@@ -46,6 +46,11 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: 'Principal',
       menus: [
         {
+          href: '/attendances',
+          label: 'Atendimentos',
+          icon: SquarePen,
+        },
+        {
           href: '/appoiments',
           label: 'Agendamentos',
           icon: CalendarCheck,

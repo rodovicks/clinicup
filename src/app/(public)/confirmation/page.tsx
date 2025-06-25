@@ -5,16 +5,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
+import { Appointment } from '@/contexts/appoiments-context';
+import { ExamType } from '@/contexts/exams-context';
 
 const ConfirmationPage = () => {
   const [cpf, setCpf] = useState('');
-  interface PatientData {
-    name: string;
-    exams: { name: string; time: string }[];
-  }
-
-  const [patientData, setPatientData] = useState<PatientData | null>(null);
+  const [patientData, setPatientData] = useState<Appointment[]>([]);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [exam, setExam] = useState<ExamType[]>([]);
 
   const handleCpfSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,12 +25,20 @@ const ConfirmationPage = () => {
     if (showWelcome) {
       const timeout = setTimeout(() => {
         setCpf('');
-        setPatientData(null);
+        setPatientData([]);
         setShowWelcome(false);
-      }, 10000);
+      }, 30000);
       return () => clearTimeout(timeout);
     }
   }, [showWelcome]);
+
+  useEffect(() => {
+    const fetchExams = async () => {
+      const response = await axios.get('/api/exam/types');
+      setExam(response.data?.data || []);
+    };
+    fetchExams();
+  }, []);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -100,21 +106,35 @@ const ConfirmationPage = () => {
         <Card className="p-8 w-full max-w-md shadow-md">
           <div className="flex flex-col items-center justify-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-center text-sky-500">
-              Bem-vindo, {patientData?.name}!
+              Bem-vindo,{' '}
+              {patientData.length > 0 ? patientData[0]?.patient_name : ''}!
             </h1>
           </div>
           <h2 className="text-lg font-semibold text-center mb-6">
             Exames de hoje:
           </h2>
-          <ul className="space-y-2">
-            {patientData?.exams?.map(
-              (exam: { name: string; time: string }, index: number) => (
-                <li key={index} className="text-sm text-gray-700">
-                  {exam.name} - {exam.time}
-                </li>
-              )
-            )}
+          <ul className="space-y-2 flex flex-col items-center">
+            {patientData?.map((x) => (
+              <li key={x.id} className="text-md font-bold text-gray-700">
+                {exam?.find((e) => e.id === x.examsTypeId)?.name ?? ''} -{' '}
+                {exam?.find((e) => e.id === x.examsTypeId)?.defaultDuration ??
+                  ''}{' '}
+                minutos
+              </li>
+            ))}
           </ul>
+          <Button
+            type="button"
+            variant="destructive"
+            className="w-full py-8 text-2xl mt-6"
+            onClick={() => {
+              setCpf('');
+              setPatientData([]);
+              setShowWelcome(false);
+            }}
+          >
+            FECHAR
+          </Button>
           <p className="text-sm text-center text-gray-500 mt-4">
             A página será reiniciada em breve...
           </p>

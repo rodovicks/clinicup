@@ -7,9 +7,20 @@ import {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = Number(searchParams.get('page')) || 1;
+  const search = searchParams.get('search') || '';
+  const examsTypeId = searchParams.get('examsTypeId') || '';
+  const status = searchParams.get('status') || '';
+  const startDate = searchParams.get('startDate') || '';
+  const endDate = searchParams.get('endDate') || '';
 
   try {
-    const data = await getAppointments(page);
+    const data = await getAppointments(page, {
+      search,
+      examsTypeId,
+      status,
+      startDate,
+      endDate,
+    });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Erro ao buscar agendamentos:', error);

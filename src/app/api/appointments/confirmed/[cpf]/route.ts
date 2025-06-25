@@ -6,9 +6,8 @@ export async function POST(
   { params }: { params: { cpf: string } }
 ) {
   try {
-    const cpf = await params.cpf;
-    console.log(cpf, 'CPF from params');
-    const data = await confirmAppointment(cpf);
+    const query = await params;
+    const data = await confirmAppointment(query?.cpf);
     return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json(

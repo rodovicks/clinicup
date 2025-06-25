@@ -1,4 +1,5 @@
 import Layout from '@/components/template/layout';
+import { AppointmentsProvider } from '@/contexts/appoiments-context';
 import { SessionProvider } from 'next-auth/react';
 
 export default function PrivateLayout({
@@ -8,7 +9,9 @@ export default function PrivateLayout({
 }) {
   return (
     <Layout>
-      <SessionProvider>{children}</SessionProvider>
+      <SessionProvider>
+        <AppointmentsProvider>{children}</AppointmentsProvider>
+      </SessionProvider>
     </Layout>
   );
 }

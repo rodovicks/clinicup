@@ -15,10 +15,26 @@ export interface Appointment {
   examsTypeId: string;
   date_start: string;
   date_end: string;
-  status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status:
+    | 'SCHEDULED'
+    | 'CONFIRMED'
+    | 'WAITING_APPOIMENT'
+    | 'IN_APPOINTMENT'
+    | 'FINISHED'
+    | 'CANCELED'
+    | 'GIVEN_UP'
+    | 'NO_SHOW';
   details: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface AppointmentFilters {
+  search?: string;
+  examsTypeId?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 interface AppointmentsContextType {
@@ -27,11 +43,20 @@ interface AppointmentsContextType {
   totalPages: number;
   totalItems: number;
   loading: boolean;
+  filters: AppointmentFilters;
   setCurrentPage: (page: number) => void;
-  fetchAppointments: (page?: number) => Promise<void>;
+  setFilters: (filters: AppointmentFilters) => void;
+  fetchAppointments: (
+    page?: number,
+    filters?: AppointmentFilters
+  ) => Promise<void>;
   saveAppointment: (appointment: Appointment) => Promise<void>;
   updateAppointment: (id: string, appointment: Appointment) => Promise<void>;
   deleteAppointment: (id: string) => Promise<void>;
+  updateAppointmentStatus: (
+    id: string,
+    statusUpdate: { status: string }
+  ) => Promise<void>;
 }
 
 const AppointmentsContext = createContext<AppointmentsContextType | null>(null);
@@ -42,6 +67,7 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<AppointmentFilters>({});
 
   const withLoading = async (callback: () => Promise<void>) => {
     setLoading(true);
@@ -58,10 +84,22 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchAppointments = async (page = currentPage) => {
+  const fetchAppointments = async (
+    page = currentPage,
+    filterParams = filters
+  ) => {
     await withLoading(async () => {
+      const params: any = { page };
+
+      if (filterParams.search) params.search = filterParams.search;
+      if (filterParams.examsTypeId)
+        params.examsTypeId = filterParams.examsTypeId;
+      if (filterParams.status) params.status = filterParams.status;
+      if (filterParams.startDate) params.startDate = filterParams.startDate;
+      if (filterParams.endDate) params.endDate = filterParams.endDate;
+
       const response = await axios.get('/api/appointments', {
-        params: { page },
+        params,
       });
       const data = response.data;
 
@@ -91,6 +129,17 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const handleUpdateAppointmentStatus = async (
+    id: string,
+    statusUpdate: { status: string }
+  ) => {
+    await withLoading(async () => {
+      await axios.patch(`/api/appointments/${id}/status`, statusUpdate);
+      toast.success('Status do agendamento atualizado com sucesso!');
+      await fetchAppointments(currentPage);
+    });
+  };
+
   const handleDeleteAppointment = async (id: string) => {
     await withLoading(async () => {
       await axios.delete(`/api/appointments/${id}`);
@@ -107,11 +156,14 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
         totalPages,
         totalItems,
         loading,
+        filters,
         setCurrentPage,
+        setFilters,
         fetchAppointments,
         saveAppointment: handleSaveAppointment,
         updateAppointment: handleUpdateAppointment,
         deleteAppointment: handleDeleteAppointment,
+        updateAppointmentStatus: handleUpdateAppointmentStatus,
       }}
     >
       {children}
