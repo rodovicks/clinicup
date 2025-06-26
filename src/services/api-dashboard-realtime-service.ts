@@ -85,42 +85,30 @@ export const getDashboardRealTime = async (
     ? { examTypeIds: examTypeIds.join(',') }
     : undefined;
   const response = await axios.get(`${BASE_URL}/dashboard/real-time`, {
-    headers,
     params,
   });
   return response.data;
 };
 
 export const getWaitingQueue = async (): Promise<WaitingQueueResponse> => {
-  const headers = await getAuthHeaders();
-  const response = await axios.get(`${BASE_URL}/dashboard/waiting-queue`, {
-    headers,
-  });
+  const response = await axios.get(`${BASE_URL}/dashboard/waiting-queue`);
   return response.data;
 };
 
 export const getFinishedAppointments =
   async (): Promise<FinishedAppointmentsResponse> => {
-    const headers = await getAuthHeaders();
     const response = await axios.get(
-      `${BASE_URL}/dashboard/finished-appointments`,
-      { headers }
+      `${BASE_URL}/dashboard/finished-appointments`
     );
     return response.data;
   };
 
 export const getExamTypesSummary = async () => {
-  const headers = await getAuthHeaders();
-  const response = await axios.get(`${BASE_URL}/dashboard/exam-types-summary`, {
-    headers,
-  });
+  const response = await axios.get(`${BASE_URL}/dashboard/exam-types-summary`);
   return response.data;
 };
 
 export const getTimeInfo = async () => {
-  const headers = await getAuthHeaders();
-  const response = await axios.get(`${BASE_URL}/dashboard/time-info`, {
-    headers,
-  });
+  const response = await axios.get(`${BASE_URL}/dashboard/time-info`);
   return response.data;
 };
