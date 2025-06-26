@@ -27,6 +27,7 @@ export interface Appointment {
   details: string;
   createdAt?: string;
   updatedAt?: string;
+  observations?: string;
 }
 
 export interface AppointmentFilters {

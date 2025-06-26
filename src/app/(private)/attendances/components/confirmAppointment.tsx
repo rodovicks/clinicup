@@ -16,7 +16,6 @@ import { useAppointments } from '@/contexts/appoiments-context';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import * as yup from 'yup';
-import { Edit } from 'lucide-react';
 import { Appointment } from '@/contexts/appoiments-context';
 
 type FormData = Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>;
@@ -56,7 +55,7 @@ interface AppointmentProps {
   examTypes: Array<{ id: string; name: string; defaultDuration?: number }>;
 }
 
-export function EditAppointment({
+export function ConfirmAppointment({
   appointment,
   examTypes,
 }: {
@@ -93,7 +92,7 @@ export function EditAppointment({
       patient_birth_date: appointment?.patient_birth_date || '',
       userId: appointment?.userId || '',
       examsTypeId: appointment?.examsTypeId || '',
-      status: appointment?.status || 'SCHEDULED',
+      status: appointment?.status || 'WAITING_APPOIMENT',
       details: appointment?.details || '',
     },
   });
@@ -142,16 +141,14 @@ export function EditAppointment({
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
-        <button className="text-sky-500 hover:text-sky-700" aria-label="Edit">
-          <Edit size={16} />
-        </button>
+        <Button variant="primary">Chamar próximo agendamento</Button>
       </DialogTrigger>
       <FormProvider {...methods}>
         <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[800px]">
           <DialogHeader>
-            <DialogTitle>Editar Agendamento</DialogTitle>
+            <DialogTitle>Confirmação de Agendamento</DialogTitle>
             <DialogDescription>
-              Atualize os campos abaixo para editar o agendamento.
+              Confirme os campos abaixo para confirmar o agendamento.
             </DialogDescription>
           </DialogHeader>
           <form

@@ -1,55 +1,93 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getAppointments } from '@/services/api-appoiments-service';
-import { getExamTypes } from '@/services/api-exams-type-service';
-import { Appointment } from '@/contexts/appoiments-context';
-import { ExamType } from '@/contexts/exams-context';
+import axios from 'axios';
 import { Card } from '@/components/ui/card';
 import { Check, ChevronsUpDown } from 'lucide-react';
+import { DateDisplay } from '@/components/ui/date-display';
+import type { ExamType as ApiExamType } from '@/contexts/exams-context';
+import type {
+  RealTimeDashboardResponse,
+  ExamType,
+} from '@/services/api-dashboard-realtime-service';
+
+interface ValidExamType extends ApiExamType {
+  id: string;
+}
 
 const SchedulePage = () => {
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [examTypes, setExamTypes] = useState<ExamType[]>([]);
-  const [selectedExamTypes, setSelectedExamTypes] = useState<string[]>([]);
-  const [currentCall, setCurrentCall] = useState<Appointment | null>(null);
+  const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
+  const [dashboardData, setDashboardData] =
+    useState<RealTimeDashboardResponse | null>(null);
+  const [examTypes, setExamTypes] = useState<ApiExamType[]>([]);
+  const [selectedExamTypeIds, setSelectedExamTypeIds] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 1000);
+    setCurrentDateTime(new Date());
 
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     const loadData = async () => {
-      const appointmentsData = (await getAppointments()).data;
-      const examTypesData = (await getExamTypes()).data;
-      setAppointments(appointmentsData);
-      setExamTypes(examTypesData);
+      try {
+        const [dashboardResponse, examTypesResponse] = await Promise.all([
+          axios.get('/api/dashboard/real-time', {
+            params: selectedExamTypeIds.length
+              ? { examTypeIds: selectedExamTypeIds.join(',') }
+              : undefined,
+          }),
+          axios.get('/api/exam/types'),
+        ]);
 
-      const confirmedAppointments = appointmentsData.filter(
-        (appointment) => appointment.status === 'CONFIRMED'
-      );
-      setCurrentCall(confirmedAppointments[0] || null);
+        setDashboardData(dashboardResponse.data);
+        setExamTypes(examTypesResponse.data.data);
+        setError(null);
+      } catch (err) {
+        console.error('Erro ao carregar dados:', err);
+        setError('Erro ao carregar dados do painel');
+      }
     };
 
     loadData();
+    const dataInterval = setInterval(loadData, 20000);
 
-    const interval = setInterval(loadData, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    const clockInterval = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 30000);
 
-  const filteredAppointments = appointments.filter((appointment) =>
-    selectedExamTypes.includes(appointment.examsTypeId)
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(clockInterval);
+    };
+  }, [selectedExamTypeIds]);
+
+  const currentPatient = dashboardData?.inProgress[0];
+
+  const validExamTypes = examTypes.filter(
+    (type): type is ValidExamType => typeof type.id === 'string'
   );
 
-  const completedAppointments = appointments.filter(
-    (appointment) => appointment.status === 'CONFIRMED'
-  );
+  const examTypeNames = validExamTypes
+    .filter((type) => selectedExamTypeIds.includes(type.id))
+    .map((type) => type.name);
+
+  if (error) {
+    return (
+      <div className="flex p-8 items-center justify-center">
+        <Card className="p-8 text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-4">Erro</h2>
+          <p>{error}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  const handleToggleExamType = (typeId: string) => {
+    setSelectedExamTypeIds((prev) =>
+      prev.includes(typeId)
+        ? prev.filter((id) => id !== typeId)
+        : [...prev, typeId]
+    );
+  };
 
   return (
     <div className="flex p-8 items-center justify-center bg-gray-100">
@@ -61,38 +99,27 @@ const SchedulePage = () => {
                 className="border border-gray-300 rounded-md p-2 w-96 flex items-center justify-between"
                 onClick={() => setOpen((prev) => !prev)}
               >
-                {selectedExamTypes.length > 0
-                  ? selectedExamTypes
-                      .map(
-                        (val) =>
-                          examTypes.find((type) => type.name === val)?.name
-                      )
-                      .join(', ')
+                {selectedExamTypeIds.length > 0
+                  ? examTypeNames.join(', ')
                   : 'Selecione os tipos de exame'}
                 <ChevronsUpDown className="ml-2 h-4 w-4" />
               </button>
               {open && (
-                <div className="absolute mt-2 border border-gray-300 rounded-md bg-white shadow-md w-96">
-                  {examTypes.length === 0 ? (
+                <div className="absolute mt-2 border border-gray-300 rounded-md bg-white shadow-md w-96 z-50">
+                  {validExamTypes.length === 0 ? (
                     <div className="p-2 text-gray-500">
                       Nenhum tipo de exame cadastrado
                     </div>
                   ) : (
-                    examTypes.map((type) => (
+                    validExamTypes.map((type) => (
                       <div
                         key={type.id}
                         className="p-2 flex items-center gap-2 cursor-pointer hover:bg-gray-100"
-                        onClick={() =>
-                          setSelectedExamTypes((prev) =>
-                            prev.includes(type.name)
-                              ? prev.filter((v) => v !== type.name)
-                              : [...prev, type.name]
-                          )
-                        }
+                        onClick={() => handleToggleExamType(type.id)}
                       >
                         <Check
                           className={`h-4 w-4 ${
-                            selectedExamTypes.includes(type.name)
+                            selectedExamTypeIds.includes(type.id)
                               ? 'opacity-100'
                               : 'opacity-0'
                           }`}
@@ -108,38 +135,39 @@ const SchedulePage = () => {
           <div className="flex items-center justify-around">
             <div className="rounded-md bg-gray-200 p-8">
               <h2 className="text-xl font-bold text-sky-500 mt-4">
-                Tempo padrão do exame{' '}
+                Tempo padrão do exame
               </h2>
               <p className="text-gray-700 text-2xl">
-                {
-                  examTypes.find((type) => type.id === currentCall?.examsTypeId)
-                    ?.defaultDuration
-                }{' '}
-                minutos
+                {(currentPatient?.examsType as ExamType)?.defaultDuration ||
+                  '-'}
               </p>
             </div>
             <div className="rounded-md bg-gray-200 p-8">
               <h1 className="text-2xl font-bold text-sky-500">Agendamentos</h1>
-              <p className="text-gray-700 text-2xl">
-                {currentDateTime.toLocaleString()}
-              </p>
+              <div suppressHydrationWarning className="text-gray-700 text-2xl">
+                {currentDateTime && (
+                  <DateDisplay date={currentDateTime} format="datetime" />
+                )}
+              </div>
             </div>
             <div className="rounded-md bg-gray-200 p-8">
               <h2 className="text-xl font-bold text-sky-500 mt-4">
-                Tempo médio de atendimento{' '}
+                Tempo médio de atendimento
               </h2>
-              <p className="text-gray-700 text-2xl">20 minutos</p>
+              <p className="text-gray-700 text-2xl">
+                {dashboardData?.averageTimes[0]?.averageTimeMinutes || '-'}{' '}
+                minutos
+              </p>
             </div>
           </div>
         </header>
         <div className="mb-6 text-center">
           <h2 className="text-6xl font-bold mb-4 text-sky-500">
-            {currentCall?.patient_name ?? 'Nenhum paciente em atendimento'}
+            {currentPatient?.patient_name || 'Nenhum paciente em atendimento'}
           </h2>
           <p className="text-2xl text-gray-700 mb-4">
             Exame:{' '}
-            {examTypes.find((type) => type.id === currentCall?.examsTypeId)
-              ?.name ?? 'Nenhum exame encontrado'}
+            {currentPatient?.examsType.name || 'Nenhum exame em andamento'}
           </p>
         </div>
         <div className="flex gap-8">
@@ -152,24 +180,25 @@ const SchedulePage = () => {
                 <tr className="bg-gray-200">
                   <th className="border border-gray-300 p-2">Paciente</th>
                   <th className="border border-gray-300 p-2">Exame</th>
-                  <th className="border border-gray-300 p-2">Horário</th>
+                  <th className="border border-gray-300 p-2">Previsão</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredAppointments.map((appointment) => (
-                  <tr key={appointment.id}>
+                {dashboardData?.confirmed.map((patient) => (
+                  <tr key={patient.id}>
                     <td className="border border-gray-300 p-2">
-                      {appointment.patient_name}
+                      {patient.patient_name}
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {
-                        examTypes.find(
-                          (type) => type.id === appointment.examsTypeId
-                        )?.name
-                      }
+                      {patient.examsType.name}
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {appointment.date_start}
+                      <div suppressHydrationWarning>
+                        <DateDisplay date={patient.date_start} />
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Espera: {patient.estimatedWaitTimeMinutes}min
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -185,32 +214,34 @@ const SchedulePage = () => {
                 <tr className="bg-gray-200">
                   <th className="border border-gray-300 p-2">Paciente</th>
                   <th className="border border-gray-300 p-2">Exame</th>
-                  <th className="border border-gray-300 p-2">Agendado</th>
                   <th className="border border-gray-300 p-2">Início</th>
                   <th className="border border-gray-300 p-2">Fim</th>
+                  <th className="border border-gray-300 p-2">Duração</th>
                 </tr>
               </thead>
               <tbody>
-                {completedAppointments.map((appointment) => (
+                {dashboardData?.finished.map((appointment) => (
                   <tr key={appointment.id}>
                     <td className="border border-gray-300 p-2">
                       {appointment.patient_name}
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {
-                        examTypes.find(
-                          (type) => type.id === appointment.examsTypeId
-                        )?.name
-                      }
+                      {appointment.examsType.name}
+                    </td>
+                    <td
+                      className="border border-gray-300 p-2"
+                      suppressHydrationWarning
+                    >
+                      <DateDisplay date={appointment.date_start} />
+                    </td>
+                    <td
+                      className="border border-gray-300 p-2"
+                      suppressHydrationWarning
+                    >
+                      <DateDisplay date={appointment.finishedDate} />
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {appointment.date_start}
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {appointment.createdAt}
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {appointment.updatedAt}
+                      {appointment.actualDurationMinutes}min
                     </td>
                   </tr>
                 ))}

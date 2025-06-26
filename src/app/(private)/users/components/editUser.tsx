@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -133,7 +133,7 @@ export function EditUser({ user }: { user: any }) {
               <Label htmlFor="email" className="font-medium">
                 E-mail
               </Label>
-              <Input id="email" type="email" {...register('email')} />
+              <Input id="email" type="email" disabled {...register('email')} />
               {errors.email && (
                 <span className="text-red-500 text-sm">
                   {errors.email.message}

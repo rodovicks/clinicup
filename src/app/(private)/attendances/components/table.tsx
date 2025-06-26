@@ -1,19 +1,13 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import {
-  useAppointments,
-  Appointment,
-  AppointmentFilters,
-} from '@/contexts/appoiments-context';
-import { EditAppointment } from './editAppointment';
+import React, { useEffect } from 'react';
+import { useAppointments } from '@/contexts/appoiments-context';
 import RemoveAppointment from './removeAppointment';
-import { DialogTrigger } from '@/components/ui/dialog';
 
 interface AppointmentProps {
   examTypes: Array<{ id: string; name: string; defaultDuration?: number }>;
 }
 
-const AppointmentTable = ({ examTypes }: AppointmentProps) => {
+const AttendancesTable = ({ examTypes }: AppointmentProps) => {
   const {
     appointments,
     currentPage,
@@ -24,14 +18,6 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
     filters,
     setFilters,
   } = useAppointments();
-
-  const [localFilters, setLocalFilters] = useState<AppointmentFilters>({
-    search: '',
-    examsTypeId: '',
-    status: '',
-    startDate: '',
-    endDate: '',
-  });
 
   const handlePrevious = () => {
     if (currentPage > 1) {
@@ -77,38 +63,14 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
     );
   };
 
-  const handleFilterChange = (
-    field: keyof AppointmentFilters,
-    value: string
-  ) => {
-    setLocalFilters((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const applyFilters = () => {
-    setFilters(localFilters);
-    setCurrentPage(1);
-    fetchAppointments(1, localFilters);
-  };
-
-  const clearFilters = () => {
-    const emptyFilters = {
-      search: '',
-      examsTypeId: '',
-      status: '',
-      startDate: '',
-      endDate: '',
-    };
-    setLocalFilters(emptyFilters);
-    setFilters(emptyFilters);
-    setCurrentPage(1);
-    fetchAppointments(1, emptyFilters);
-  };
-
   useEffect(() => {
-    fetchAppointments(1);
+    const localFilters = {
+      status: 'CONFIRMED',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+    };
+    setFilters(localFilters);
+    fetchAppointments(1, localFilters);
   }, []);
 
   return (
@@ -195,13 +157,6 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
                   <td className="px-6 py-4 text-sm text-gray-700 flex items-center gap-2">
                     {appointment.id && (
                       <>
-                        <EditAppointment
-                          appointment={
-                            appointment as Required<Pick<Appointment, 'id'>> &
-                              Appointment
-                          }
-                          examTypes={examTypes}
-                        />
                         <RemoveAppointment appointmentId={appointment.id} />
                       </>
                     )}
@@ -244,4 +199,4 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
   );
 };
 
-export default AppointmentTable;
+export default AttendancesTable;
