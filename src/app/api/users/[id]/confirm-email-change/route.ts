@@ -2,7 +2,7 @@ import { confirmEmailChange } from '@/services/api-users-service';
 import { NextResponse } from 'next/server';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function POST(request: Request, { params }: Params) {

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { updateUser, deleteUser, getUser } from '@/services/api-users-service';
-import { handleFormData } from '../route';
+import { handleFormData } from '../utils';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: Request, { params }: Params) {

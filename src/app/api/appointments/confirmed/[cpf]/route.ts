@@ -3,11 +3,11 @@ import { confirmAppointment } from '@/services/api-appointments-confirmation-ser
 
 export async function POST(
   request: Request,
-  { params }: { params: { cpf: string } }
+  { params }: { params: Promise<{ cpf: string }> }
 ) {
   try {
-    const query = await params;
-    const data = await confirmAppointment(query?.cpf);
+    const { cpf } = await params;
+    const data = await confirmAppointment(cpf);
     return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json(

@@ -3,11 +3,10 @@ import { updateAppointmentStatus } from '@/services/api-appoiments-service';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-
   try {
+    const { id } = await params;
     const body = await request.json();
     const { status } = body;
 

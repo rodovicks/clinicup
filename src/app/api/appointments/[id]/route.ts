@@ -6,11 +6,12 @@ import {
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const updated = await updateAppointment(params.id, body);
+    const updated = await updateAppointment(id, body);
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error('Erro ao atualizar agendamento:', error);
@@ -26,10 +27,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteAppointment(params.id);
+    const { id } = await params;
+    await deleteAppointment(id);
     return NextResponse.json({ message: 'Agendamento excluído com sucesso' });
   } catch (error: any) {
     console.error('Erro ao excluir agendamento:', error);

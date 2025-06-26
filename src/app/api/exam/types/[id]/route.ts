@@ -5,7 +5,7 @@ import {
 } from '@/services/api-exams-type-service';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function PUT(request: Request, { params }: Params) {

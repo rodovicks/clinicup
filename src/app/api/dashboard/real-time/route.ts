@@ -9,9 +9,6 @@ export async function GET(
   const examTypeIds = searchParams.get('examTypeIds')?.split(',') || [];
 
   try {
-    const headers = {
-      'Content-Type': 'application/json',
-    };
     const data = await getDashboardRealTime(examTypeIds);
     return NextResponse.json(data);
   } catch (error: any) {
