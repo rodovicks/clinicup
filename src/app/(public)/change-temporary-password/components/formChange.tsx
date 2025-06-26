@@ -1,35 +1,35 @@
-'use client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Activity } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import { useState } from 'react';
-import axios from 'axios';
+"use client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Activity } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+import axios from "axios";
 
 const schema = yup.object().shape({
-  temporaryPassword: yup.string().required('Senha temporária é obrigatória'),
+  temporaryPassword: yup.string().required("Senha temporária é obrigatória"),
   newPassword: yup
     .string()
-    .min(8, 'A senha deve ter pelo menos 8 caracteres')
-    .matches(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula')
-    .matches(/[a-z]/, 'A senha deve conter pelo menos uma letra minúscula')
-    .matches(/[0-9]/, 'A senha deve conter pelo menos um número')
+    .min(8, "A senha deve ter pelo menos 8 caracteres")
+    .matches(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
+    .matches(/[a-z]/, "A senha deve conter pelo menos uma letra minúscula")
+    .matches(/[0-9]/, "A senha deve conter pelo menos um número")
     .matches(
       /[@$!%*?&]/,
-      'A senha deve conter pelo menos um caractere especial'
+      "A senha deve conter pelo menos um caractere especial"
     )
-    .required('Nova senha é obrigatória'),
+    .required("Nova senha é obrigatória"),
   confirmNewPassword: yup
     .string()
-    .oneOf([yup.ref('newPassword')], 'As senhas não coincidem')
-    .required('Confirmação de senha é obrigatória'),
+    .oneOf([yup.ref("newPassword")], "As senhas não coincidem")
+    .required("Confirmação de senha é obrigatória"),
 });
 
 export default function FormChangePassword() {
@@ -40,7 +40,7 @@ export default function FormChangePassword() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
-    mode: 'onChange',
+    mode: "onChange",
   });
 
   const router = useRouter();
@@ -53,17 +53,17 @@ export default function FormChangePassword() {
   const onSubmit = async (data: ChangePasswordFormInputs) => {
     setLoading(true);
     try {
-      await axios.post('/api/reset-temporary-password', {
-        data,
+      await axios.post("/api/reset-temporary-password", {
+        ...data,
       });
       toast.success(
-        'Senha alterada com sucesso. Você será redirecionado para o login.'
+        "Senha alterada com sucesso. Você será redirecionado para o login."
       );
       await signOut({ redirect: false });
-      router.push('/login');
+      router.push("/login");
     } catch (error: any) {
-      console.error('Erro ao alterar senha:', error);
-      toast.error(error.response?.data?.message || 'Erro ao alterar a senha.');
+      console.error("Erro ao alterar senha:", error);
+      toast.error(error.response?.data?.message || "Erro ao alterar a senha.");
     } finally {
       setLoading(false);
     }
@@ -95,9 +95,9 @@ export default function FormChangePassword() {
               type="password"
               placeholder="Digite sua senha temporária"
               className={`mt-1 w-full ${
-                errors.temporaryPassword ? 'border-red-500' : ''
+                errors.temporaryPassword ? "border-red-500" : ""
               }`}
-              {...register('temporaryPassword')}
+              {...register("temporaryPassword")}
             />
             {errors.temporaryPassword && (
               <p className="text-xs text-red-500 mt-1">
@@ -117,9 +117,9 @@ export default function FormChangePassword() {
               type="password"
               placeholder="Digite sua nova senha"
               className={`mt-1 w-full ${
-                errors.newPassword ? 'border-red-500' : ''
+                errors.newPassword ? "border-red-500" : ""
               }`}
-              {...register('newPassword')}
+              {...register("newPassword")}
             />
             {errors.newPassword && (
               <p className="text-xs text-red-500 mt-1">
@@ -139,9 +139,9 @@ export default function FormChangePassword() {
               type="password"
               placeholder="Confirme sua nova senha"
               className={`mt-1 w-full ${
-                errors.confirmNewPassword ? 'border-red-500' : ''
+                errors.confirmNewPassword ? "border-red-500" : ""
               }`}
-              {...register('confirmNewPassword')}
+              {...register("confirmNewPassword")}
             />
             {errors.confirmNewPassword && (
               <p className="text-xs text-red-500 mt-1">
@@ -157,7 +157,7 @@ export default function FormChangePassword() {
               className="w-full"
               onClick={async () => {
                 await signOut({ redirect: false });
-                router.push('/login');
+                router.push("/login");
               }}
             >
               Cancelar
@@ -168,7 +168,7 @@ export default function FormChangePassword() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Alterando...' : 'Alterar Senha'}
+              {loading ? "Alterando..." : "Alterar Senha"}
             </Button>
           </div>
         </form>
