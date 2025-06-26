@@ -41,10 +41,7 @@ export const isAdminDashboard = (
 };
 
 export const getDashboardData = async (): Promise<DashboardData> => {
-  const headers = await getAuthHeaders();
-  const response = await axios.get(`${BASE_URL}/dashboard`, {
-    headers,
-  });
+  const response = await axios.get(`${BASE_URL}/dashboard`, {});
 
   return response.data;
 };

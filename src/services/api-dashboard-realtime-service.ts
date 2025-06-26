@@ -80,13 +80,7 @@ export interface FinishedAppointmentsResponse {
 export const getDashboardRealTime = async (
   examTypeIds?: string[]
 ): Promise<RealTimeDashboardResponse> => {
-  const headers = await getAuthHeaders();
-  const params = examTypeIds?.length
-    ? { examTypeIds: examTypeIds.join(',') }
-    : undefined;
-  const response = await axios.get(`${BASE_URL}/dashboard/real-time`, {
-    params,
-  });
+  const response = await axios.get(`${BASE_URL}/dashboard/real-time`, {});
   return response.data;
 };
 
