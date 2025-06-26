@@ -20,6 +20,7 @@ import {
   type DashboardData,
   isAdminDashboard,
 } from '@/services/api-dashboard-service';
+import axios from 'axios';
 
 ChartJS.register(
   CategoryScale,
@@ -106,11 +107,11 @@ export default function DashboardPage() {
     async function loadDashboard() {
       try {
         setLoading(true);
-        const data = await getDashboardData();
-        setDashboardData(data);
+        const response = await axios.get<DashboardData>('/api/dashboard/'); // <-- log para depuração
+        setDashboardData(response.data);
         setError(null);
       } catch (err) {
-        console.error('Erro ao carregar dashboard:', err);
+        console.error('Erro ao carregar dashboard:', err); // <-- log para depuração
         setError('Não foi possível carregar os dados do dashboard');
       } finally {
         setLoading(false);
@@ -145,7 +146,7 @@ export default function DashboardPage() {
 
   if (
     !session?.user?.role ||
-    (session.user.role !== 'SECRETARY' && session.user.role !== 'ADMIN')
+    (session.user.role !== 'SECRETARIA' && session.user.role !== 'ADMIN')
   ) {
     return (
       <ContentLayout title="Dashboard">

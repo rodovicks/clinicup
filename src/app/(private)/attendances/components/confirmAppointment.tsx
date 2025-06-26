@@ -113,7 +113,7 @@ export function ConfirmAppointment({
     try {
       await updateAppointment(appointment.id, {
         ...data,
-        status: appointment.status || 'SCHEDULED',
+        status: appointment.status || 'WAITING_APPOIMENT',
       });
       setIsDialogOpen(false);
     } finally {

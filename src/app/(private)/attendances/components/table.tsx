@@ -1,7 +1,8 @@
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAppointments } from '@/contexts/appoiments-context';
 import RemoveAppointment from './removeAppointment';
+import { CheckCircle, Ban, XCircle, Clock } from 'lucide-react';
 
 interface AppointmentProps {
   examTypes: Array<{ id: string; name: string; defaultDuration?: number }>;
@@ -17,6 +18,7 @@ const AttendancesTable = ({ examTypes }: AppointmentProps) => {
     setCurrentPage,
     filters,
     setFilters,
+    updateAppointmentStatus,
   } = useAppointments();
 
   const handlePrevious = () => {
@@ -62,16 +64,6 @@ const AttendancesTable = ({ examTypes }: AppointmentProps) => {
       colorMap[status as keyof typeof colorMap] || 'text-gray-600 bg-gray-100'
     );
   };
-
-  useEffect(() => {
-    const localFilters = {
-      status: 'CONFIRMED',
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date().toISOString().split('T')[0],
-    };
-    setFilters(localFilters);
-    fetchAppointments(1, localFilters);
-  }, []);
 
   return (
     <div>
@@ -158,6 +150,51 @@ const AttendancesTable = ({ examTypes }: AppointmentProps) => {
                     {appointment.id && (
                       <>
                         <RemoveAppointment appointmentId={appointment.id} />
+                        {/* Ícones de status */}
+                        <button
+                          title="Finalizar"
+                          onClick={async () =>
+                            await updateAppointmentStatus(appointment.id!, {
+                              status: 'FINISHED',
+                            })
+                          }
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          <CheckCircle size={20} />
+                        </button>
+                        <button
+                          title="Desistência"
+                          onClick={async () =>
+                            await updateAppointmentStatus(appointment.id!, {
+                              status: 'GIVEN_UP',
+                            })
+                          }
+                          className="text-orange-500 hover:text-orange-700"
+                        >
+                          <XCircle size={20} />
+                        </button>
+                        <button
+                          title="Cancelar"
+                          onClick={async () =>
+                            await updateAppointmentStatus(appointment.id!, {
+                              status: 'CANCELED',
+                            })
+                          }
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Ban size={20} />
+                        </button>
+                        <button
+                          title="Em atraso"
+                          onClick={async () =>
+                            await updateAppointmentStatus(appointment.id!, {
+                              status: 'NO_SHOW',
+                            })
+                          }
+                          className="text-yellow-600 hover:text-yellow-800"
+                        >
+                          <Clock size={20} />
+                        </button>
                       </>
                     )}
                   </td>

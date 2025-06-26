@@ -3,7 +3,6 @@ import { getAuthHeaders } from './jwt-service';
 
 const BASE_URL = process.env.BASE_URL || '';
 
-// Interface base com campos comuns
 interface BaseDashboardData {
   totalPatients: number;
   totalAppoiments: number;
@@ -21,7 +20,6 @@ interface BaseDashboardData {
   };
 }
 
-// Interface para secretária
 interface SecretaryDashboardData extends BaseDashboardData {
   totalConfirmed: number;
   totalFinished: number;
@@ -29,16 +27,13 @@ interface SecretaryDashboardData extends BaseDashboardData {
   averageWaitingTimeMinutes: number;
 }
 
-// Interface para admin
 interface AdminDashboardData extends BaseDashboardData {
   totalUsersActive: number;
   totalExamTypes: number;
 }
 
-// União dos tipos possíveis
 export type DashboardData = SecretaryDashboardData | AdminDashboardData;
 
-// Helper para verificar se é dashboard do admin
 export const isAdminDashboard = (
   dashboard: DashboardData
 ): dashboard is AdminDashboardData => {
