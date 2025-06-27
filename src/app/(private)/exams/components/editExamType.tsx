@@ -74,7 +74,6 @@ export function EditExamType({ examType }: { examType?: any }) {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      console.log('teste', data);
       await updateExamType(examType.id, data);
       setIsDialogOpen(false);
     } finally {

@@ -47,8 +47,6 @@ export default function SetPassword() {
 
   const onSubmit = async (data: SetPasswordFormInputs) => {
     try {
-      // Simulate API call for setting a new password
-      console.log('Setting new password:', data.password);
       toast.success('Senha alterada com sucesso.');
       router.push('/login');
     } catch (error) {

@@ -73,7 +73,6 @@ export function NewExamType({ examType }: { examType?: any }) {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      console.log('teste', data);
       await saveExamType(data);
       setIsDialogOpen(false);
     } finally {

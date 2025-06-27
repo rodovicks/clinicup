@@ -62,7 +62,7 @@ export const saveUser = async (data: User | FormData): Promise<User> => {
   const headers = isFormData
     ? await getAuthHeadersWithoutContentType()
     : await getAuthHeaders();
-  console.log(data);
+
   const response = await axios.post(`${BASE_URL}/users`, data, { headers });
   return response.data;
 };

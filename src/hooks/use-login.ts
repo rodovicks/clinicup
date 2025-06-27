@@ -26,7 +26,6 @@ export function useLogin() {
       if (result?.error) {
         let errorMessage = result.error;
 
-        // Tratamento para erros conhecidos da API
         if (
           errorMessage.includes('E-mail ou senha inválidos') ||
           errorMessage.includes('Senha inválida') ||
@@ -36,7 +35,6 @@ export function useLogin() {
           return { success: false, error: errorMessage };
         }
 
-        // Tratamento para erros internos / genéricos
         if (errorMessage.includes('Configuration')) {
           errorMessage = 'Erro de configuração do login';
         } else if (errorMessage.includes('CredentialsSignin')) {

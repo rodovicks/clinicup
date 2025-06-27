@@ -10,9 +10,8 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import AppointmentTable from './components/table';
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ConfirmAppointment } from './components/confirmAppointment';
 import { Appointment, useAppointments } from '@/contexts/appoiments-context';
 
 export default function AppoimentsPage() {
@@ -42,8 +41,6 @@ export default function AppoimentsPage() {
     }
   }, [appointments]);
 
-  console.log('Appointments:', appointments);
-
   return (
     <ContentLayout title="Atendimentos">
       <div className="flex items-center justify-between">
@@ -60,14 +57,6 @@ export default function AppoimentsPage() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div>
-          <ConfirmAppointment
-            appointment={
-              appointment as Required<Pick<Appointment, 'id'>> & Appointment
-            }
-            examTypes={examTypes}
-          />
-        </div>
       </div>
       <div className="mt-8">
         <AppointmentTable examTypes={examTypes} />

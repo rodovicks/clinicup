@@ -129,7 +129,6 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
             />
           </div>
 
-          {/* Exam Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tipo de Exame
@@ -150,7 +149,7 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
             </select>
           </div>
 
-          {/* Status */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
@@ -172,7 +171,7 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
             </select>
           </div>
 
-          {/* Start Date */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Data Início
@@ -185,7 +184,7 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
             />
           </div>
 
-          {/* End Date */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Data Fim
@@ -199,7 +198,7 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
           </div>
         </div>
 
-        {/* Buttons */}
+        {}
         <div className="flex gap-3">
           <button
             onClick={applyFilters}
@@ -216,7 +215,7 @@ const AppointmentTable = ({ examTypes }: AppointmentProps) => {
         </div>
       </div>
 
-      {/* Tabela */}
+      {}
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse border border-gray-200 bg-white shadow-md rounded-lg">
           <thead className="bg-gray-100">

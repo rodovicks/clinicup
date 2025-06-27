@@ -35,7 +35,6 @@ export default function VerifyCode() {
 
   const onSubmit = async (data: VerifyCodeFormInputs) => {
     try {
-      console.log('Verifying code:', data.code);
       const isValid = true;
       if (isValid) {
         toast.success('Código verificado com sucesso.');

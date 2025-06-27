@@ -46,7 +46,6 @@ export const updateSetupMaxTime = async (maxWaitTimeMin: number) => {
 };
 
 export const saveSetup = async (data: RegisterData) => {
-  console.log(data);
   const headers = { 'Content-Type': 'application/json' };
   const response = await axios.post(`${BASE_URL}/setup`, data, {
     headers,

@@ -3,7 +3,7 @@ export type AppointmentStatus =
   | 'CONFIRMED'
   | 'WAITING_APPOIMENT'
   | 'IN_APPOINTMENT'
-  | 'FINISHED'
+  | 'FINISIHED'
   | 'CANCELED'
   | 'GIVEN_UP'
   | 'NO_SHOW';
@@ -21,6 +21,7 @@ export interface Appointment {
   date_end: string;
   status: AppointmentStatus;
   details: string;
+  statusDetails?: string;
   createdAt?: string;
   updatedAt?: string;
   exam_start?: string;

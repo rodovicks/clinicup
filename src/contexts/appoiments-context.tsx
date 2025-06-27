@@ -20,11 +20,12 @@ export interface Appointment {
     | 'CONFIRMED'
     | 'WAITING_APPOIMENT'
     | 'IN_APPOINTMENT'
-    | 'FINISHED'
+    | 'FINISIHED'
     | 'CANCELED'
     | 'GIVEN_UP'
     | 'NO_SHOW';
   details: string;
+  statusDetails?: string;
   createdAt?: string;
   updatedAt?: string;
   observations?: string;
@@ -56,7 +57,7 @@ interface AppointmentsContextType {
   deleteAppointment: (id: string) => Promise<void>;
   updateAppointmentStatus: (
     id: string,
-    statusUpdate: { status: string }
+    statusUpdate: { status: string; details?: string; finishedTime?: string }
   ) => Promise<void>;
 }
 
@@ -132,7 +133,7 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleUpdateAppointmentStatus = async (
     id: string,
-    statusUpdate: { status: string }
+    statusUpdate: { status: string; details?: string; finishedTime?: string }
   ) => {
     await withLoading(async () => {
       await axios.patch(`/api/appointments/${id}/status`, statusUpdate);

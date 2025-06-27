@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log('Dados do agendamento:', body);
+
     const created = await saveAppointment(body);
     return NextResponse.json(created);
   } catch (error: any) {

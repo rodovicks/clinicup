@@ -107,11 +107,11 @@ export default function DashboardPage() {
     async function loadDashboard() {
       try {
         setLoading(true);
-        const response = await axios.get<DashboardData>('/api/dashboard/'); // <-- log para depuração
+        const response = await axios.get<DashboardData>('/api/dashboard/');
         setDashboardData(response.data);
         setError(null);
       } catch (err) {
-        console.error('Erro ao carregar dashboard:', err); // <-- log para depuração
+        console.error('Erro ao carregar dashboard:', err);
         setError('Não foi possível carregar os dados do dashboard');
       } finally {
         setLoading(false);

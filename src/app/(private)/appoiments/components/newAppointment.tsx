@@ -21,19 +21,19 @@ import { useSession } from 'next-auth/react';
 
 const maskCPF = (value: string) => {
   return value
-    .replace(/\D/g, '') // Remove tudo que não é dígito
-    .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto após 3 dígitos
-    .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto após 3 dígitos
-    .replace(/(\d{3})(\d{1,2})/, '$1-$2') // Coloca hífen entre os dois últimos
-    .replace(/(-\d{2})\d+?$/, '$1'); // Remove dígitos excedentes
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1');
 };
 
 const maskPhone = (value: string) => {
   return value
-    .replace(/\D/g, '') // Remove tudo que não é dígito
-    .slice(0, 11) // Limita a 11 dígitos
-    .replace(/(\d{2})(\d)/, '($1) $2') // Coloca parênteses em torno dos dois primeiros dígitos
-    .replace(/(\d{5})(\d)/, '$1-$2'); // Coloca hífen entre os dois últimos
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2');
 };
 
 const schema = yup.object().shape({
@@ -259,13 +259,11 @@ export const NewAppointment = React.memo(function NewAppointment({
                 onChange={(e) => {
                   methods.setValue('date_start', e.target.value);
                   if (examDuration && e.target.value) {
-                    // Adicionar minutos diretamente ao horário de início
                     const startDateTime = new Date(e.target.value);
                     const endDateTime = new Date(
                       startDateTime.getTime() + examDuration * 60000
                     );
 
-                    // Formatar para datetime-local
                     const year = endDateTime.getFullYear();
                     const month = String(endDateTime.getMonth() + 1).padStart(
                       2,

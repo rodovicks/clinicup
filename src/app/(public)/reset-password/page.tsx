@@ -32,7 +32,6 @@ export default function ResetPassword() {
 
   const onSubmit = async (data: ResetPasswordFormInputs) => {
     try {
-      console.log('Resetting password for:', data.email);
       toast.success(
         'Instruções de redefinição de senha enviadas para o email.'
       );

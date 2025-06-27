@@ -8,7 +8,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { status, details, finishedTime } = body;
 
     if (!status) {
       return NextResponse.json(
@@ -17,7 +17,11 @@ export async function PATCH(
       );
     }
 
-    const updated = await updateAppointmentStatus(id, { status });
+    const updated = await updateAppointmentStatus(id, {
+      status,
+      details,
+      finishedTime,
+    });
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error('Erro ao atualizar status do agendamento:', error);

@@ -91,7 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email;
         token.role = user.role;
         token.expiresOn = user.expiresOn;
-        token.tempPassword = user.tempPassword; // Pass tempPassword to token
+        token.tempPassword = user.tempPassword;
       }
       return token;
     },
@@ -101,7 +101,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         name: token.name,
         email: token.email,
         role: token.role,
-        tempPassword: token.tempPassword, // Pass tempPassword to session
+        tempPassword: token.tempPassword,
       };
 
       return session;

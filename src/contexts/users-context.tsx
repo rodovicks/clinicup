@@ -66,7 +66,6 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
 
   const handleSaveUser = async (user: FormData) => {
     await withLoading(async () => {
-      console.log(user);
       await axios.post('/api/users', user);
       toast.success('Usuário salvo com sucesso!');
       await fetchUsers(currentPage);

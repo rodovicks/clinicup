@@ -59,7 +59,6 @@ export function NewUser({ user }: { user?: any }) {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      console.log('Form data submitted:', data);
       const formData = new FormData();
 
       const userData = {

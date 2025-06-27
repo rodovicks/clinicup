@@ -67,7 +67,7 @@ export const deleteAppointment = async (id: string) => {
 
 export const updateAppointmentStatus = async (
   id: string,
-  statusUpdate: { status: string }
+  statusUpdate: { status: string; details?: string; finishedTime?: string }
 ): Promise<Appointment> => {
   const headers = await getAuthHeaders();
   const response = await axios.patch(
